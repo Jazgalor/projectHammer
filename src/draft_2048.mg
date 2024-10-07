@@ -29,7 +29,7 @@
                 "split": 1
             },
             "uids": {
-                "0": "170f122646d9667a8ec794995f4f922888739562"
+                "0": "311defef5c1a0bc04e2926cd7f13e4247b8a78f0"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -102,7 +102,7 @@
                 "split": 1
             },
             "uids": {
-                "0": "78c8ee75de331948eb2ca2fb781e57c86601c380"
+                "0": "6bc683c8c98704f3cd2b4247a416b4c1fbd58034"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -192,7 +192,7 @@
                 "split": 1
             },
             "uids": {
-                "0": "d3a17c01cc9f276f3c8085c68a5301794f1f3ec1"
+                "0": "d7ef9df2662f959e52744c452200090e4d6497c8"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -231,7 +231,7 @@
                 "split": 0
             },
             "uids": {
-                "0": "e456ea9a95803d270847e1dc37b74861baa83234"
+                "0": "f84d4fbf328feaba4d1c1c94c77fc4072bf805a6"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -242,9 +242,9 @@
                 "describerTypes": [
                     "dspsift"
                 ],
-                "describerPreset": "normal",
+                "describerPreset": "high",
                 "maxNbFeatures": 0,
-                "describerQuality": "normal",
+                "describerQuality": "high",
                 "contrastFiltering": "GridSort",
                 "relativePeakThreshold": 0.01,
                 "gridFiltering": true,
@@ -275,7 +275,7 @@
                 "split": 1
             },
             "uids": {
-                "0": "744c01823167670aa917ceca8997ecaaaba7d16b"
+                "0": "b0641481384530303317ce6ca539063b23f52ea3"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -351,7 +351,7 @@
                 "sensorDatabase": "${ALICEVISION_SENSOR_DB}",
                 "lensCorrectionProfileInfo": "${ALICEVISION_LENS_PROFILE_INFO}",
                 "lensCorrectionProfileSearchIgnoreCameraModel": true,
-                "defaultFieldOfView": 45.0,
+                "defaultFieldOfView": 60.0,
                 "groupCameraFallback": "folder",
                 "allowedCameraModels": [
                     "pinhole",
@@ -393,7 +393,7 @@
                 "split": 1
             },
             "uids": {
-                "0": "3d722693e8d139d3bf4a264ba3768afaa557deb0"
+                "0": "ae6b0a07737a987a6e08598aa81c6b53b35a1236"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -402,7 +402,7 @@
                 "keepLargestMeshOnly": false,
                 "smoothingSubset": "all",
                 "smoothingBoundariesNeighbours": 0,
-                "smoothingIterations": 5,
+                "smoothingIterations": 3,
                 "smoothingLambda": 1.0,
                 "filteringSubset": "all",
                 "filteringIterations": 1,
@@ -432,7 +432,7 @@
                 "split": 0
             },
             "uids": {
-                "0": "6835726e6e0d4a3cd72110b64d87bd5e9cfe6209"
+                "0": "cc3f89ea1e5d2f9f7e96e9b79a004a5cc0fb05d9"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -478,7 +478,7 @@
                 "split": 0
             },
             "uids": {
-                "0": "6591a6ae7fdd82cb11b997679ec562735088be35"
+                "0": "54aec84e39468da0420b6c8d31ea98c6f0d36cca"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -515,7 +515,7 @@
                 "split": 1
             },
             "uids": {
-                "0": "2bb037dfc2e398f56a688367f13a0da0e5a39a71"
+                "0": "7b7e4ca2462ce8a5e9c4269e635dd778bca32ce1"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -523,7 +523,7 @@
                     "{Texturing_1.outputMesh}",
                     "{Texturing_1.outputMaterial}",
                     "{Texturing_1.outputTextures}",
-                    "{MeshFiltering_1.outputMesh}"
+                    "{Meshing_1.outputMesh}"
                 ],
                 "output": "",
                 "verboseLevel": "info"
