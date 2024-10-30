@@ -11,9 +11,11 @@ from tkinter import Label
 import subprocess
 
 # Konfiguracja ścieżki do folderu z obrazami
-UPLOAD_FOLDER = './received_images'
+UPLOAD_FOLDER = 'output/received_images'
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
+
+MODEL_FOLDER = 'output/meshroom'
 
 # Parametry serwera
 SERVICE_TYPE = "_imageTransfer._tcp.local."
@@ -86,7 +88,7 @@ def start_mdns_service():
 
 def start_photogrammetry():
     image_folder = UPLOAD_FOLDER
-    output_folder = "./output/meshroom"
+    output_folder = MODEL_FOLDER
     graph_folder = "./src/draft_2048.mg"
     cache_folder = os.path.abspath("./MeshroomCache")
 
