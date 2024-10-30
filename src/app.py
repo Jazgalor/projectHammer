@@ -8,6 +8,7 @@ from PIL import Image, ImageTk
 import tkinter as tk
 from tkinter import font as tkfont
 from tkinter import Label
+import subprocess
 
 # Konfiguracja ścieżki do folderu z obrazami
 UPLOAD_FOLDER = './received_images'
@@ -83,6 +84,14 @@ def start_mdns_service():
     print("Usługa mDNS zarejestrowana.")
     return zeroconf
 
+def start_photogrammetry():
+    image_folder = UPLOAD_FOLDER
+    output_folder = "./output/meshroom"
+    graph_folder = "./src/draft_2048.mg"
+    cache_folder = os.path.abspath("./MeshroomCache")
+
+    subprocess.run(["meshroom_batch", "--input", image_folder, "--output", output_folder, "--pipeline", graph_folder, "--cache", cache_folder])
+
 # Funkcja do wyświetlania zdjęć w GUI
 def display_image(image_path, label):
     image = Image.open(image_path)
@@ -101,6 +110,7 @@ class App(tk.Tk):
         tk.Tk.__init__(self, *args, **kwargs)
 
         self.title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="italic")
+        self.geometry("640x480")
 
         # the container is where we'll stack a bunch of frames
         # on top of each other, then the one we want visible
@@ -111,7 +121,7 @@ class App(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (StartPage, ImageReceiverApp):
+        for F in (StartPage, ImageReceiverApp, ImagePhotogrammetryApp):
             page_name = F.__name__
             frame = F(parent=container, controller=self)
             self.frames[page_name] = frame
@@ -136,9 +146,13 @@ class StartPage(tk.Frame):
         label = tk.Label(self, text="This is the start page", font=controller.title_font)
         label.pack(side="top", fill="x", pady=10)
 
-        button1 = tk.Button(self, text="Go to Page One",
+        button1 = tk.Button(self, text="Sterowanie serwerem",
                             command=lambda: controller.show_frame("ImageReceiverApp"))
-        button1.pack()
+        button1.pack(pady=10)
+
+        button2 = tk.Button(self, text="Narzędzie do fotogrametrii",
+                            command=lambda: controller.show_frame("ImagePhotogrammetryApp"))
+        button2.pack(pady=10)
 
 class ImageReceiverApp(tk.Frame):
     
@@ -154,17 +168,17 @@ class ImageReceiverApp(tk.Frame):
         image_label.pack(pady=10)
 
         start_button = tk.Button(self, text="Start service", command=self.start_service)
-        start_button.pack()
+        start_button.pack(pady=10)
 
         start_button = tk.Button(self, text="Stop service", command=self.stop_service)
-        start_button.pack()
+        start_button.pack(pady=10)
 
         refresh_button = tk.Button(self, text="Odśwież i wyświetl zdjęcie", command=lambda: self.refresh_image(image_label))
-        refresh_button.pack()
+        refresh_button.pack(pady=10)
 
-        button1 = tk.Button(self, text="Go to Page One",
+        return_button = tk.Button(self, text="Powrót",
                             command=lambda: controller.show_frame("StartPage"))
-        button1.pack()
+        return_button.pack(pady=10)
 
     def start_service(self):
         global SERVICE_IS_RUNNING
@@ -194,6 +208,23 @@ class ImageReceiverApp(tk.Frame):
         if files:
             latest_file = max([os.path.join(UPLOAD_FOLDER, f) for f in files], key=os.path.getctime)
             display_image(latest_file, label)
+
+class ImagePhotogrammetryApp(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+
+        photogrammetry_button = tk.Button(self, text="Rozpocznij",
+                                          command=self.new_photogrammetry_thread)
+        photogrammetry_button.pack(pady=10)
+
+        return_button = tk.Button(self, text="Powrót",
+                            command=lambda: controller.show_frame("StartPage"))
+        return_button.pack(pady=10)
+
+    def new_photogrammetry_thread(self):
+        threading.Thread(target=start_photogrammetry, daemon=True).start()
+        
 
 #############################################
 #                  MAIN
