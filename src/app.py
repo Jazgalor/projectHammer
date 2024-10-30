@@ -94,13 +94,6 @@ def start_photogrammetry():
 
     subprocess.run(["meshroom_batch", "--input", image_folder, "--output", output_folder, "--pipeline", graph_folder, "--cache", cache_folder])
 
-# Funkcja do wyświetlania zdjęć w GUI
-def display_image(image_path, label):
-    image = Image.open(image_path)
-    image = image.resize((250, 250), Image.LANCZOS)  # Skalowanie obrazu
-    photo = ImageTk.PhotoImage(image)
-    label.config(image=photo)
-    label.image = photo
 
 #############################################
 #                   GUI
@@ -175,9 +168,6 @@ class ImageReceiverApp(tk.Frame):
         start_button = tk.Button(self, text="Stop service", command=self.stop_service)
         start_button.pack(pady=10)
 
-        refresh_button = tk.Button(self, text="Odśwież i wyświetl zdjęcie", command=lambda: self.refresh_image(image_label))
-        refresh_button.pack(pady=10)
-
         return_button = tk.Button(self, text="Powrót",
                             command=lambda: controller.show_frame("StartPage"))
         return_button.pack(pady=10)
@@ -203,13 +193,6 @@ class ImageReceiverApp(tk.Frame):
             self.zeroconf = None
             self.SERVICE_THREAD = None
 
-
-    def refresh_image(self, label):
-        # Znajdź najnowszy plik w folderze
-        files = os.listdir(UPLOAD_FOLDER)
-        if files:
-            latest_file = max([os.path.join(UPLOAD_FOLDER, f) for f in files], key=os.path.getctime)
-            display_image(latest_file, label)
 
 class ImagePhotogrammetryApp(tk.Frame):
     def __init__(self, parent, controller):
