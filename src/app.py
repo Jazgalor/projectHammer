@@ -1,14 +1,12 @@
-import asyncio
 import os
 import socket
-import struct
 import threading
+import subprocess
 from zeroconf import Zeroconf, ServiceInfo
-from PIL import Image, ImageTk
 import tkinter as tk
 from tkinter import font as tkfont
 from tkinter import Label
-import subprocess
+
 
 # Konfiguracja ścieżki do folderu z obrazami
 UPLOAD_FOLDER = 'output/received_images'
@@ -116,7 +114,7 @@ class App(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (StartPage, ImageReceiverApp, ImagePhotogrammetryApp):
+        for F in (StartPage, ImageReceiverApp, PhotogrammetryApp):
             page_name = F.__name__
             frame = F(parent=container, controller=self)
             self.frames[page_name] = frame
@@ -146,7 +144,7 @@ class StartPage(tk.Frame):
         button1.pack(pady=10)
 
         button2 = tk.Button(self, text="Narzędzie do fotogrametrii",
-                            command=lambda: controller.show_frame("ImagePhotogrammetryApp"))
+                            command=lambda: controller.show_frame("PhotogrammetryApp"))
         button2.pack(pady=10)
 
 class ImageReceiverApp(tk.Frame):
@@ -184,6 +182,7 @@ class ImageReceiverApp(tk.Frame):
         if self.zeroconf:
             SERVICE_IS_RUNNING = False
             self.zeroconf.close()
+            # function for unregistering is not necessary
             # zeroconf.unregister_service(ServiceInfo(
             #     SERVICE_TYPE, SERVICE_NAME, SERVICE_PORT,
             #     0,
@@ -194,7 +193,7 @@ class ImageReceiverApp(tk.Frame):
             self.SERVICE_THREAD = None
 
 
-class ImagePhotogrammetryApp(tk.Frame):
+class PhotogrammetryApp(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
