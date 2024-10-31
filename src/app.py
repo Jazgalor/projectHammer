@@ -102,8 +102,8 @@ class App(tk.Tk):
     def __init__(self, *args, **kwargs):
         tk.Tk.__init__(self, *args, **kwargs)
 
-        self.title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="italic")
-        self.geometry("640x480")
+        self.title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="roman")
+        self.geometry("480x320")
 
         # the container is where we'll stack a bunch of frames
         # on top of each other, then the one we want visible
@@ -136,14 +136,14 @@ class StartPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
-        label = tk.Label(self, text="This is the start page", font=controller.title_font)
+        label = tk.Label(self, text="Start page", font=controller.title_font)
         label.pack(side="top", fill="x", pady=10)
 
-        button1 = tk.Button(self, text="Sterowanie serwerem",
+        button1 = tk.Button(self, text="Image receiver page",
                             command=lambda: controller.show_frame("ImageReceiverApp"))
         button1.pack(pady=10)
 
-        button2 = tk.Button(self, text="Narzędzie do fotogrametrii",
+        button2 = tk.Button(self, text="Photogrammetry page",
                             command=lambda: controller.show_frame("PhotogrammetryApp"))
         button2.pack(pady=10)
 
@@ -154,11 +154,12 @@ class ImageReceiverApp(tk.Frame):
     zeroconf = None
 
     def __init__(self, parent, controller):
+
         tk.Frame.__init__(self, parent)
         self.controller = controller
         
-        image_label = Label(self)
-        image_label.pack(pady=10)
+        label = tk.Label(self, text="Image receiver service page", font=controller.title_font)
+        label.pack(side="top", fill="x", pady=10)
 
         start_button = tk.Button(self, text="Start service", command=self.start_service)
         start_button.pack(pady=10)
@@ -166,7 +167,7 @@ class ImageReceiverApp(tk.Frame):
         start_button = tk.Button(self, text="Stop service", command=self.stop_service)
         start_button.pack(pady=10)
 
-        return_button = tk.Button(self, text="Powrót",
+        return_button = tk.Button(self, text="Return",
                             command=lambda: controller.show_frame("StartPage"))
         return_button.pack(pady=10)
 
@@ -198,11 +199,14 @@ class PhotogrammetryApp(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.controller = controller
 
-        photogrammetry_button = tk.Button(self, text="Rozpocznij",
+        label = tk.Label(self, text="Photogrammetry page", font=controller.title_font)
+        label.pack(side="top", fill="x", pady=10)
+
+        photogrammetry_button = tk.Button(self, text="Start",
                                           command=self.new_photogrammetry_thread)
         photogrammetry_button.pack(pady=10)
 
-        return_button = tk.Button(self, text="Powrót",
+        return_button = tk.Button(self, text="Return",
                             command=lambda: controller.show_frame("StartPage"))
         return_button.pack(pady=10)
 
