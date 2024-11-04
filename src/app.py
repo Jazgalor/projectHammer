@@ -87,11 +87,9 @@ def start_mdns_service():
 def start_photogrammetry():
     image_folder = UPLOAD_FOLDER
     output_folder = MODEL_FOLDER
-    graph_folder = "./src/draft_2048.mg"
+    graph_folder = "./src/graphs/draft_2048.mg"
     cache_folder = os.path.abspath("./MeshroomCache")
-
-    subprocess.run(["meshroom_batch", "--input", image_folder, "--output", output_folder, "--pipeline", graph_folder, "--cache", cache_folder])
-
+    subprocess.run(["meshroom_batch", "--input", image_folder, "--output", output_folder, "--pipeline", graph_folder, "--cache", cache_folder, "--paramOverrides", "FeatureExtraction:describerPreset=medium"])
 
 #############################################
 #                   GUI
@@ -199,19 +197,54 @@ class PhotogrammetryApp(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.controller = controller
 
-        label = tk.Label(self, text="Photogrammetry page", font=controller.title_font)
-        label.pack(side="top", fill="x", pady=10)
+        label = tk.Label(self, text="Photogrammetry Page", font=controller.title_font)
+        label.pack(side="top", fill="x", pady=5)
 
-        photogrammetry_button = tk.Button(self, text="Start",
+        # Divide the frame into left and right sections
+        left_frame = tk.Frame(self, relief="raised", bd=2)
+        left_frame.pack(side="left", fill="y", padx=10, pady=10)
+
+        right_frame = tk.LabelFrame(self, text="Graph options")
+        right_frame.pack(side="left", fill="both", expand=True, padx=10, pady=10)
+
+        # Label for photogrammetry page
+       
+
+        # Start photogrammetry button
+        photogrammetry_button = tk.Button(left_frame, text="Start",
                                           command=self.new_photogrammetry_thread)
-        photogrammetry_button.pack(pady=10)
+        photogrammetry_button.pack(padx=5, pady=5, fill='x')
 
-        return_button = tk.Button(self, text="Return",
-                            command=lambda: controller.show_frame("StartPage"))
-        return_button.pack(pady=10)
+        # Return button
+        return_button = tk.Button(left_frame, text="Return",
+                                  command=lambda: controller.show_frame("StartPage"))
+        return_button.pack(padx=5, pady=5, fill='x')
+
+        # Multiple selection options on the rights
+
+        # Add some example options (these could be adapted to match Meshroom's parameters)
+        self.option1_var = tk.BooleanVar()
+        option1 = tk.Checkbutton(right_frame, text="Option 1: High Quality", variable=self.option1_var)
+        option1.pack(anchor="w", pady=2)
+
+        self.option2_var = tk.BooleanVar()
+        option2 = tk.Checkbutton(right_frame, text="Option 2: Depth Map Adjustment", variable=self.option2_var)
+        option2.pack(anchor="w", pady=2)
+
+        self.option3_var = tk.BooleanVar()
+        option3 = tk.Checkbutton(right_frame, text="Option 3: Texture Quality", variable=self.option3_var)
+        option3.pack(anchor="w", pady=2)
 
     def new_photogrammetry_thread(self):
+        # In a real implementation, these options would adjust the subprocess call or graph configuration
+        options = {
+            "High Quality": self.option1_var.get(),
+            "Depth Map Adjustment": self.option2_var.get(),
+            "Texture Quality": self.option3_var.get()
+        }
+        print("Starting photogrammetry with options:", options)
         threading.Thread(target=start_photogrammetry, daemon=True).start()
+
         
 
 #############################################
