@@ -89,7 +89,7 @@ def start_photogrammetry():
     output_folder = MODEL_FOLDER
     graph_folder = "./src/graphs/draft_2048.mg"
     cache_folder = os.path.abspath("./MeshroomCache")
-    subprocess.run(["meshroom_batch", "--input", image_folder, "--output", output_folder, "--pipeline", graph_folder, "--cache", cache_folder, "--paramOverrides", "FeatureExtraction:describerPreset=medium"])
+    subprocess.run(["meshroom_batch", "--input", image_folder, "--output", output_folder, "--pipeline", graph_folder, "--cache", cache_folder, "--paramOverrides", "FeatureExtraction:describerPreset=medium", "FeatureExtraction:describerQuality=medium"])
 
 #############################################
 #                   GUI
@@ -193,9 +193,18 @@ class ImageReceiverApp(tk.Frame):
 
 
 class PhotogrammetryApp(tk.Frame):
+
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
+
+        self.options = {
+            "FeatureExtraction:describerPreset": tk.StringVar(self, ["low", "medium", "normal", "high", "ultra"]),
+            "FeatureExtraction:describerQuality": tk.StringVar(self,["low", "medium", "normal", "high", "ultra"]),
+            "DepthMap:downscale": tk.StringVar(self,["1", "2", "4", "8", "16"]),
+            "Texturing:textureSide": tk.StringVar(self,["1024", "2048", "4096", "8192", "16384"]),
+            "Texturing:downscale": tk.StringVar(self,["1", "2", "4", "8"]),
+        }
 
         label = tk.Label(self, text="Photogrammetry Page", font=controller.title_font)
         label.pack(side="top", fill="x", pady=5)
@@ -223,17 +232,25 @@ class PhotogrammetryApp(tk.Frame):
         # Multiple selection options on the rights
 
         # Add some example options (these could be adapted to match Meshroom's parameters)
-        self.option1_var = tk.BooleanVar()
-        option1 = tk.Checkbutton(right_frame, text="Option 1: High Quality", variable=self.option1_var)
-        option1.pack(anchor="w", pady=2)
+        label1 = tk.Label(right_frame, text="Describer Density")
+        label1.grid(row=0, column=0, pady=2)
+        option1 = tk.Listbox(right_frame, selectmode="single", listvariable=self.options["FeatureExtraction:describerPreset"])
+        option1.grid(row=1, column=0, pady=2)
+        option1.activate(3)
 
-        self.option2_var = tk.BooleanVar()
-        option2 = tk.Checkbutton(right_frame, text="Option 2: Depth Map Adjustment", variable=self.option2_var)
-        option2.pack(anchor="w", pady=2)
+        label2 = tk.Label(right_frame, text="Describer Quality")
+        label2.grid(row=0, column=1, pady=2)
+        option2 = tk.Listbox(right_frame, selectmode="single", listvariable=self.options["FeatureExtraction:describerQuality"])
+        option2.grid(row=1, column=1, pady=2)
+        option2.activate(3)
 
-        self.option3_var = tk.BooleanVar()
-        option3 = tk.Checkbutton(right_frame, text="Option 3: Texture Quality", variable=self.option3_var)
-        option3.pack(anchor="w", pady=2)
+        # self.option2_var = tk.BooleanVar()
+        # option2 = tk.Checkbutton(right_frame, text="Option 2: Depth Map Adjustment", variable=self.option2_var)
+        # option2.pack(anchor="w", pady=2)
+
+        # self.option3_var = tk.BooleanVar()
+        # option3 = tk.Checkbutton(right_frame, text="Option 3: Texture Quality", variable=self.option3_var)
+        # option3.pack(anchor="w", pady=2)
 
     def new_photogrammetry_thread(self):
         # In a real implementation, these options would adjust the subprocess call or graph configuration
