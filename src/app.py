@@ -6,6 +6,7 @@ from zeroconf import Zeroconf, ServiceInfo
 import tkinter as tk
 from tkinter import font as tkfont
 from tkinter import Label
+import shutil
 
 
 # Konfiguracja ścieżki do folderu z obrazami
@@ -84,12 +85,20 @@ def start_mdns_service():
     print("Usługa mDNS zarejestrowana.")
     return zeroconf
 
-def start_photogrammetry():
+def start_photogrammetry(options: dict):
     image_folder = UPLOAD_FOLDER
     output_folder = MODEL_FOLDER
-    graph_folder = "./src/graphs/draft_2048.mg"
     cache_folder = os.path.abspath("./MeshroomCache")
-    subprocess.run(["meshroom_batch", "--input", image_folder, "--output", output_folder, "--pipeline", graph_folder, "--cache", cache_folder, "--paramOverrides", "FeatureExtraction:describerPreset=medium", "FeatureExtraction:describerQuality=medium"])
+    if os.path.exists('./MeshroomCache'):
+        shutil.rmtree(os.path.abspath("./MeshroomCache"))
+    if options["Use CUDA"]:
+        graph_folder = "./src/graphs/cuda_2048.mg"
+    else:
+        graph_folder = "./src/graphs/draft_2048.mg"
+        options.pop('DepthMap:downscale', None)
+    options.pop('Use CUDA', None)
+    options_join = [f"{key}={value}" for key,value in options.items()]
+    subprocess.run(["meshroom_batch", "--input", image_folder, "--output", output_folder, "--pipeline", graph_folder, "--cache", cache_folder, "--paramOverrides", *options_join])
 
 #############################################
 #                   GUI
@@ -198,69 +207,76 @@ class PhotogrammetryApp(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.controller = controller
 
+        # Define options for each setting
         self.options = {
-            "FeatureExtraction:describerPreset": tk.StringVar(self, ["low", "medium", "normal", "high", "ultra"]),
-            "FeatureExtraction:describerQuality": tk.StringVar(self,["low", "medium", "normal", "high", "ultra"]),
-            "DepthMap:downscale": tk.StringVar(self,["1", "2", "4", "8", "16"]),
-            "Texturing:textureSide": tk.StringVar(self,["1024", "2048", "4096", "8192", "16384"]),
-            "Texturing:downscale": tk.StringVar(self,["1", "2", "4", "8"]),
+            "FeatureExtraction:describerPreset": ["low", "medium", "normal", "high", "ultra"],
+            "FeatureExtraction:describerQuality": ["low", "medium", "normal", "high", "ultra"],
+            "DepthMap:downscale": ["1", "2", "4", "8", "16"],
+            "Texturing:textureSide": ["1024", "2048", "4096", "8192", "16384"],
+            "Texturing:downscale": ["1", "2", "4", "8"]
         }
 
+        # Store selected values for each option
+        self.selected_options = {key: tk.StringVar(value=values[1]) for key, values in self.options.items()}
+        self.use_cuda = tk.BooleanVar(value=False)  # Variable for CUDA checkbox
+
+        # Header label for the Photogrammetry page
         label = tk.Label(self, text="Photogrammetry Page", font=controller.title_font)
         label.pack(side="top", fill="x", pady=5)
 
-        # Divide the frame into left and right sections
+        # Split the frame into left and right sections
         left_frame = tk.Frame(self, relief="raised", bd=2)
         left_frame.pack(side="left", fill="y", padx=10, pady=10)
 
-        right_frame = tk.LabelFrame(self, text="Graph options")
+        right_frame = tk.LabelFrame(self, text="Graph Options")
         right_frame.pack(side="left", fill="both", expand=True, padx=10, pady=10)
 
-        # Label for photogrammetry page
-       
-
-        # Start photogrammetry button
+        # Start photogrammetry button on the left side
         photogrammetry_button = tk.Button(left_frame, text="Start",
                                           command=self.new_photogrammetry_thread)
         photogrammetry_button.pack(padx=5, pady=5, fill='x')
 
-        # Return button
+        # Return button on the left side
         return_button = tk.Button(left_frame, text="Return",
                                   command=lambda: controller.show_frame("StartPage"))
         return_button.pack(padx=5, pady=5, fill='x')
 
-        # Multiple selection options on the rights
+        # CUDA option on the right side
+        cuda_checkbox = tk.Checkbutton(right_frame, text="Use CUDA", variable=self.use_cuda, command=self.toggle_depthmap_options)
+        cuda_checkbox.grid(row=0, column=0, sticky="w", pady=5)
 
-        # Add some example options (these could be adapted to match Meshroom's parameters)
-        label1 = tk.Label(right_frame, text="Describer Density")
-        label1.grid(row=0, column=0, pady=2)
-        option1 = tk.Listbox(right_frame, selectmode="single", listvariable=self.options["FeatureExtraction:describerPreset"])
-        option1.grid(row=1, column=0, pady=2)
-        option1.activate(3)
+        # Create the selection options on the right side
+        row = 1  # Start row after CUDA option
+        for option_name, choices in self.options.items():
+            # Label for each option
+            label = tk.Label(right_frame, text=option_name)
+            label.grid(row=row, column=0, sticky="w", pady=2)
 
-        label2 = tk.Label(right_frame, text="Describer Quality")
-        label2.grid(row=0, column=1, pady=2)
-        option2 = tk.Listbox(right_frame, selectmode="single", listvariable=self.options["FeatureExtraction:describerQuality"])
-        option2.grid(row=1, column=1, pady=2)
-        option2.activate(3)
+            # Dropdown menu for each option
+            option_menu = tk.OptionMenu(right_frame, self.selected_options[option_name], *choices)
+            option_menu.grid(row=row, column=1, sticky="ew", pady=2)
 
-        # self.option2_var = tk.BooleanVar()
-        # option2 = tk.Checkbutton(right_frame, text="Option 2: Depth Map Adjustment", variable=self.option2_var)
-        # option2.pack(anchor="w", pady=2)
+            # If this is the DepthMap option, keep a reference for enabling/disabling
+            if option_name == "DepthMap:downscale":
+                self.depthmap_menu = option_menu
+                option_menu.configure(state="disabled")  # Initially disabled
 
-        # self.option3_var = tk.BooleanVar()
-        # option3 = tk.Checkbutton(right_frame, text="Option 3: Texture Quality", variable=self.option3_var)
-        # option3.pack(anchor="w", pady=2)
+            row += 1
+
+    def toggle_depthmap_options(self):
+        # Enable or disable DepthMap option based on CUDA checkbox state
+        if self.use_cuda.get():
+            self.depthmap_menu.configure(state="normal")
+        else:
+            self.depthmap_menu.configure(state="disabled")
 
     def new_photogrammetry_thread(self):
-        # In a real implementation, these options would adjust the subprocess call or graph configuration
-        options = {
-            "High Quality": self.option1_var.get(),
-            "Depth Map Adjustment": self.option2_var.get(),
-            "Texture Quality": self.option3_var.get()
-        }
-        print("Starting photogrammetry with options:", options)
-        threading.Thread(target=start_photogrammetry, daemon=True).start()
+        # Gather the selected options, including CUDA choice, to use in photogrammetry
+        selected_values = {key: var.get() for key, var in self.selected_options.items()}
+        selected_values["Use CUDA"] = self.use_cuda.get()
+        print("Starting photogrammetry with options:", selected_values)
+        threading.Thread(target=start_photogrammetry,args=[selected_values], daemon=True).start()
+
 
         
 
