@@ -10,6 +10,7 @@ import os
 import socket
 import threading
 import subprocess
+from typing import Literal
 from zeroconf import Zeroconf, ServiceInfo
 import tkinter as tk
 from tkinter import font as tkfont
@@ -37,6 +38,13 @@ SERVICE_IS_RUNNING = False
 #                 FUNCTIONS
 #############################################
 
+def log(
+    *values: object,
+    sep: str | None = " ",
+    end: str | None = "\n",
+    flush: Literal[False] = False,
+    ): threading.Thread(target=print, args=values, kwargs={'sep': sep, 'end': end, 'flush': flush}, daemon=True).start()
+
 # Funkcja odbierająca pliki
 def start_receive_service():
     # Ustawienia serwera TCP
@@ -44,31 +52,31 @@ def start_receive_service():
     server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server_socket.bind(('', SERVICE_PORT))
     server_socket.listen(5)
-    print(f"Serwer nasłuchuje na porcie {SERVICE_PORT}...")
+    log(f"Serwer nasłuchuje na porcie {SERVICE_PORT}...")
 
     while SERVICE_IS_RUNNING:
         try:      
             server_socket.settimeout(1.0)
             conn, addr = server_socket.accept()
-            print(f"Odebrano połączenie z: {addr}")
+            log(f"Odebrano połączenie z: {addr}")
 
             # Odbieranie nazwy pliku
             file_name = conn.recv(BUFFER_SIZE).decode().strip()
             if not file_name:
-                print("Nie udało się odebrać nazwy pliku.")
+                log("Nie udało się odebrać nazwy pliku.")
                 conn.close()
                 continue
 
             file_path = os.path.join(UPLOAD_FOLDER, file_name)
             with open(file_path, 'wb') as f:
-                print(f"Zapisywanie pliku: {file_path}")
+                log(f"Zapisywanie pliku: {file_path}")
                 while True:
                     data = conn.recv(BUFFER_SIZE)
                     if not data:
                         break
                     f.write(data)
 
-            print(f"Plik {file_name} zapisany.")
+            log(f"Plik {file_name} zapisany.")
             conn.close()
         except TimeoutError:
             continue
@@ -77,7 +85,7 @@ def start_receive_service():
         except UnicodeDecodeError:
             conn.close()
             continue
-    print('End of service')
+    log('End of service')
 
 # Funkcja do rozgłaszania usługi mDNS
 def start_mdns_service():
@@ -95,7 +103,7 @@ def start_mdns_service():
     )
 
     zeroconf.register_service(service_info)
-    print("Usługa mDNS zarejestrowana.")
+    log("Usługa mDNS zarejestrowana.")
     return zeroconf
 
 def start_photogrammetry(options: dict, button: tk.Button):
@@ -207,8 +215,8 @@ class ImageReceiverApp(tk.Frame):
         SERVICE_IS_RUNNING = True
 
         self.zeroconf = start_mdns_service()
-        self.SERVICE_THREAD = threading.Thread(target=start_receive_service, daemon=True)
-        self.SERVICE_THREAD.start()
+        self.service_thread = threading.Thread(target=start_receive_service, daemon=True)
+        self.service_thread.start()
     
     def stop_service(self):
         global SERVICE_IS_RUNNING
@@ -223,7 +231,7 @@ class ImageReceiverApp(tk.Frame):
             #     {},
             #     "ImageTransferService.local.")) 
             self.zeroconf = None
-            self.SERVICE_THREAD = None
+            self.service_thread = None
 
 
 class PhotogrammetryApp(tk.Frame):
@@ -302,7 +310,6 @@ class PhotogrammetryApp(tk.Frame):
         # Gather the selected options, including CUDA choice, to use in photogrammetry
         selected_values = {key: var.get() for key, var in self.selected_options.items()}
         selected_values["Use CUDA"] = self.use_cuda.get()
-        print("Starting photogrammetry with options:", selected_values)
         button["state"] = "disabled"
         threading.Thread(target=start_photogrammetry,args=[selected_values, button], daemon=True).start()
 
@@ -316,7 +323,6 @@ class PhotogrammetryApp(tk.Frame):
 if __name__ == "__main__":
     # Inicjalizacja GUI
     app = App()
-
     # # Rozgłaszanie usługi mDNS
     # zeroconf = start_mdns_service()
     
