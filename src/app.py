@@ -5,7 +5,6 @@ import subprocess
 from zeroconf import Zeroconf, ServiceInfo
 import tkinter as tk
 from tkinter import font as tkfont
-from tkinter import Label
 import shutil
 
 
@@ -85,7 +84,7 @@ def start_mdns_service():
     print("Usługa mDNS zarejestrowana.")
     return zeroconf
 
-def start_photogrammetry(options: dict):
+def start_photogrammetry(options: dict, button: tk.Button):
     image_folder = UPLOAD_FOLDER
     output_folder = MODEL_FOLDER
     cache_folder = os.path.abspath("./MeshroomCache")
@@ -99,6 +98,7 @@ def start_photogrammetry(options: dict):
     options.pop('Use CUDA', None)
     options_join = [f"{key}={value}" for key,value in options.items()]
     subprocess.run(["meshroom_batch", "--input", image_folder, "--output", output_folder, "--pipeline", graph_folder, "--cache", cache_folder, "--paramOverrides", *options_join])
+    button["state"] = "normal"
 
 #############################################
 #                   GUI
@@ -144,15 +144,22 @@ class StartPage(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.controller = controller
         label = tk.Label(self, text="Start page", font=controller.title_font)
-        label.pack(side="top", fill="x", pady=10)
+        label.pack(side="top", fill="x", pady=5)
 
-        button1 = tk.Button(self, text="Image receiver page",
+        main_frame = tk.Frame(self, relief="sunken", bd=2, width=100)
+        main_frame.pack(side="top", fill="y", pady=10, padx=10, expand=True)
+
+        button1 = tk.Button(main_frame, text="Image receiver page",
                             command=lambda: controller.show_frame("ImageReceiverApp"))
-        button1.pack(pady=10)
+        button1.pack(fill="x", pady=10, padx=10)
 
-        button2 = tk.Button(self, text="Photogrammetry page",
+        button2 = tk.Button(main_frame, text="Photogrammetry page",
                             command=lambda: controller.show_frame("PhotogrammetryApp"))
-        button2.pack(pady=10)
+        button2.pack(fill="x", pady=10, padx=10)
+
+        quit_button = tk.Button(main_frame, text="Quit",
+                            command=controller.destroy)
+        quit_button.pack(fill="x", pady=10, padx=10)
 
 class ImageReceiverApp(tk.Frame):
     
@@ -166,21 +173,25 @@ class ImageReceiverApp(tk.Frame):
         self.controller = controller
         
         label = tk.Label(self, text="Image receiver service page", font=controller.title_font)
-        label.pack(side="top", fill="x", pady=10)
+        label.pack(side="top", fill="x", pady=5)
 
-        start_button = tk.Button(self, text="Start service", command=self.start_service)
-        start_button.pack(pady=10)
+        main_frame = tk.Frame(self, relief="sunken", bd=2, width=100)
+        main_frame.pack(side="top", fill="y", pady=10, padx=10, expand=True)
 
-        start_button = tk.Button(self, text="Stop service", command=self.stop_service)
-        start_button.pack(pady=10)
+        start_button = tk.Button(main_frame, text="Start service", command=self.start_service)
+        start_button.pack(fill="x", pady=10, padx=10)
 
-        return_button = tk.Button(self, text="Return",
+        stop_button = tk.Button(main_frame, text="Stop service", command=self.stop_service)
+        stop_button.pack(fill="x", pady=10, padx=10)
+
+        return_button = tk.Button(main_frame, text="Return",
                             command=lambda: controller.show_frame("StartPage"))
-        return_button.pack(pady=10)
+        return_button.pack(fill="x", pady=10, padx=10)
 
-    def start_service(self):
+    def start_service(self, ):
         global SERVICE_IS_RUNNING
         SERVICE_IS_RUNNING = True
+
         self.zeroconf = start_mdns_service()
         self.SERVICE_THREAD = threading.Thread(target=start_receive_service, daemon=True)
         self.SERVICE_THREAD.start()
@@ -225,15 +236,18 @@ class PhotogrammetryApp(tk.Frame):
         label.pack(side="top", fill="x", pady=5)
 
         # Split the frame into left and right sections
-        left_frame = tk.Frame(self, relief="raised", bd=2)
-        left_frame.pack(side="left", fill="y", padx=10, pady=10)
+        left_frame = tk.Frame(self, relief="sunken", bd=2)
+        left_frame.pack(side="left", fill="y", padx=5, pady=10)
 
-        right_frame = tk.LabelFrame(self, text="Graph Options")
-        right_frame.pack(side="left", fill="both", expand=True, padx=10, pady=10)
+        right_frame = tk.Frame(self, relief="sunken", bd=2)
+        right_frame.pack(side="right", fill="both", expand=True, padx=5, pady=10)
+
+        option_frame = tk.LabelFrame(right_frame, text="Graph Options")
+        option_frame.pack(side="left", fill="both", expand=True, padx=10, pady=10)
 
         # Start photogrammetry button on the left side
         photogrammetry_button = tk.Button(left_frame, text="Start",
-                                          command=self.new_photogrammetry_thread)
+                                          command=lambda: self.new_photogrammetry_thread(photogrammetry_button))
         photogrammetry_button.pack(padx=5, pady=5, fill='x')
 
         # Return button on the left side
@@ -242,18 +256,18 @@ class PhotogrammetryApp(tk.Frame):
         return_button.pack(padx=5, pady=5, fill='x')
 
         # CUDA option on the right side
-        cuda_checkbox = tk.Checkbutton(right_frame, text="Use CUDA", variable=self.use_cuda, command=self.toggle_depthmap_options)
+        cuda_checkbox = tk.Checkbutton(option_frame, text="Use CUDA", variable=self.use_cuda, command=self.toggle_depthmap_options)
         cuda_checkbox.grid(row=0, column=0, sticky="w", pady=5)
 
         # Create the selection options on the right side
         row = 1  # Start row after CUDA option
         for option_name, choices in self.options.items():
             # Label for each option
-            label = tk.Label(right_frame, text=option_name)
-            label.grid(row=row, column=0, sticky="w", pady=2)
+            label = tk.Label(option_frame, text=option_name)
+            label.grid(row=row, column=0, sticky="w", pady=2, padx=10)
 
             # Dropdown menu for each option
-            option_menu = tk.OptionMenu(right_frame, self.selected_options[option_name], *choices)
+            option_menu = tk.OptionMenu(option_frame, self.selected_options[option_name], *choices)
             option_menu.grid(row=row, column=1, sticky="ew", pady=2)
 
             # If this is the DepthMap option, keep a reference for enabling/disabling
@@ -270,12 +284,13 @@ class PhotogrammetryApp(tk.Frame):
         else:
             self.depthmap_menu.configure(state="disabled")
 
-    def new_photogrammetry_thread(self):
+    def new_photogrammetry_thread(self, button: tk.Button):
         # Gather the selected options, including CUDA choice, to use in photogrammetry
         selected_values = {key: var.get() for key, var in self.selected_options.items()}
         selected_values["Use CUDA"] = self.use_cuda.get()
         print("Starting photogrammetry with options:", selected_values)
-        threading.Thread(target=start_photogrammetry,args=[selected_values], daemon=True).start()
+        button["state"] = "disabled"
+        threading.Thread(target=start_photogrammetry,args=[selected_values, button], daemon=True).start()
 
 
         
