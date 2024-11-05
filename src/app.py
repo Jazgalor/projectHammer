@@ -1,3 +1,11 @@
+"""
+## This is a main file for image server app with additional Functionalities.
+### Structure:
+ - Imports
+ - Initial code
+ - Functions
+ - GUI app
+"""
 import os
 import socket
 import threading
@@ -7,6 +15,9 @@ import tkinter as tk
 from tkinter import font as tkfont
 import shutil
 
+#############################################
+#                   INIT
+#############################################
 
 # Konfiguracja ścieżki do folderu z obrazami
 UPLOAD_FOLDER = 'output/received_images'
@@ -22,6 +33,9 @@ SERVICE_PORT = 5000
 BUFFER_SIZE = 4096
 SERVICE_IS_RUNNING = False
 
+#############################################
+#                 FUNCTIONS
+#############################################
 
 # Funkcja odbierająca pliki
 def start_receive_service():
