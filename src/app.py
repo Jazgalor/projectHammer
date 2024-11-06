@@ -46,66 +46,6 @@ def log(
     flush: Literal[False] = False,
     ): threading.Thread(target=print, args=values, kwargs={'sep': sep, 'end': end, 'flush': flush}, daemon=True).start()
 
-# Funkcja odbierająca pliki
-def start_receive_service():
-    # Ustawienia serwera TCP
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    server_socket.bind(('', SERVICE_PORT))
-    server_socket.listen(5)
-    log(f"Serwer nasłuchuje na porcie {SERVICE_PORT}...")
-
-    while SERVICE_IS_RUNNING:
-        try:      
-            server_socket.settimeout(1.0)
-            conn, addr = server_socket.accept()
-            log(f"Odebrano połączenie z: {addr}")
-
-            # Odbieranie nazwy pliku
-            file_name = conn.recv(BUFFER_SIZE).decode().strip()
-            if not file_name:
-                log("Nie udało się odebrać nazwy pliku.")
-                conn.close()
-                continue
-
-            file_path = os.path.join(UPLOAD_FOLDER, file_name)
-            with open(file_path, 'wb') as f:
-                log(f"Zapisywanie pliku: {file_path}")
-                while True:
-                    data = conn.recv(BUFFER_SIZE)
-                    if not data:
-                        break
-                    f.write(data)
-
-            log(f"Plik {file_name} zapisany.")
-            conn.close()
-        except TimeoutError:
-            continue
-        except OSError:
-            break
-        except UnicodeDecodeError:
-            conn.close()
-            continue
-    log('End of service')
-
-# Funkcja do rozgłaszania usługi mDNS
-def start_mdns_service():
-    host_ip = socket.gethostbyname(socket.gethostname())
-    zeroconf = Zeroconf()
-    service_info = ServiceInfo(
-        SERVICE_TYPE,
-        SERVICE_NAME,
-        SERVICE_PORT,
-        0,
-        0,
-        {},
-        "ImageTransferService.local.",
-        addresses=[socket.inet_aton(host_ip)],
-    )
-
-    zeroconf.register_service(service_info)
-    log("Usługa mDNS zarejestrowana.")
-    return zeroconf
 
 #############################################
 #                   GUI
@@ -189,25 +129,25 @@ class ImageReceiverApp(tk.Frame):
         main_frame = tk.Frame(self, relief="sunken", bd=2, width=100)
         main_frame.pack(side="top", pady=10, padx=10, expand=True)
 
-        start_button = tk.Button(main_frame, text="Start service", command=self.start_service)
+        start_button = tk.Button(main_frame, text="Start service", command=self.start_services)
         start_button.pack(fill="x", pady=10, padx=10)
 
-        stop_button = tk.Button(main_frame, text="Stop service", command=self.stop_service)
+        stop_button = tk.Button(main_frame, text="Stop service", command=self.stop_services)
         stop_button.pack(fill="x", pady=10, padx=10)
 
         return_button = tk.Button(main_frame, text="Return",
                             command=lambda: controller.show_frame("StartPage"))
         return_button.pack(fill="x", pady=10, padx=10)
 
-    def start_service(self, ):
+
+    def start_services(self, ):
         global SERVICE_IS_RUNNING
         SERVICE_IS_RUNNING = True
-
-        self.zeroconf = start_mdns_service()
-        self.service_thread = threading.Thread(target=start_receive_service, daemon=True)
+        self.zeroconf = self.start_mdns_service()
+        self.service_thread = threading.Thread(target=self.start_receive_service, daemon=True)
         self.service_thread.start()
     
-    def stop_service(self):
+    def stop_services(self):
         global SERVICE_IS_RUNNING
         if self.zeroconf:
             SERVICE_IS_RUNNING = False
@@ -221,6 +161,67 @@ class ImageReceiverApp(tk.Frame):
             #     "ImageTransferService.local.")) 
             self.zeroconf = None
             self.service_thread = None
+
+    # Funkcja odbierająca pliki
+    def start_receive_service(self):
+        # Ustawienia serwera TCP
+        server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        server_socket.bind(('', SERVICE_PORT))
+        server_socket.listen(5)
+        log(f"Serwer nasłuchuje na porcie {SERVICE_PORT}...")
+
+        while SERVICE_IS_RUNNING:
+            try:      
+                server_socket.settimeout(1.0)
+                conn, addr = server_socket.accept()
+                log(f"Odebrano połączenie z: {addr}")
+
+                # Odbieranie nazwy pliku
+                file_name = conn.recv(BUFFER_SIZE).decode().strip()
+                if not file_name:
+                    log("Nie udało się odebrać nazwy pliku.")
+                    conn.close()
+                    continue
+
+                file_path = os.path.join(UPLOAD_FOLDER, file_name)
+                with open(file_path, 'wb') as f:
+                    log(f"Zapisywanie pliku: {file_path}")
+                    while True:
+                        data = conn.recv(BUFFER_SIZE)
+                        if not data:
+                            break
+                        f.write(data)
+
+                log(f"Plik {file_name} zapisany.")
+                conn.close()
+            except TimeoutError:
+                continue
+            except OSError:
+                break
+            except UnicodeDecodeError:
+                conn.close()
+                continue
+        log('End of service')
+
+    # Funkcja do rozgłaszania usługi mDNS
+    def start_mdns_service(self):
+        host_ip = socket.gethostbyname(socket.gethostname())
+        zeroconf = Zeroconf()
+        service_info = ServiceInfo(
+            SERVICE_TYPE,
+            SERVICE_NAME,
+            SERVICE_PORT,
+            0,
+            0,
+            {},
+            "ImageTransferService.local.",
+            addresses=[socket.inet_aton(host_ip)],
+        )
+
+        zeroconf.register_service(service_info)
+        log("Usługa mDNS zarejestrowana.")
+        return zeroconf
 
 class ImageBrowserApp(tk.Frame):
     def __init__(self, parent, controller):
