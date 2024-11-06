@@ -415,17 +415,9 @@ class PhotogrammetryApp(tk.Frame):
 if __name__ == "__main__":
     # Inicjalizacja GUI
     app = App()
-    # # Rozgłaszanie usługi mDNS
-    # zeroconf = start_mdns_service()
-    
-    # # Uruchamianie serwera w osobnym wątku
-    # threading.Thread(target=start_receive_service, daemon=True).start()
 
     # Obsługa GUI
     try:
         app.mainloop()
     finally:
         pass
-        # Wyrejestrowanie usługi mDNS
-        # zeroconf.unregister_service(ServiceInfo(SERVICE_TYPE, SERVICE_NAME))
-        # zeroconf.close()
