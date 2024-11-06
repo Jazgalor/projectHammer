@@ -27,6 +27,8 @@ if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
 
 MODEL_FOLDER = 'output/meshroom'
+if not os.path.exists(MODEL_FOLDER):
+    os.makedirs(MODEL_FOLDER)
 
 # Parametry serwera
 SERVICE_TYPE = "_imageTransfer._tcp.local."
@@ -59,9 +61,6 @@ class App(tk.Tk):
         self.title_font = tkfont.Font(family='Helvetica', size=18, weight="bold", slant="roman")
         self.geometry("480x320")
 
-        # the container is where we'll stack a bunch of frames
-        # on top of each other, then the one we want visible
-        # will be raised above the others
         container = tk.Frame(self)
         container.pack(side="top", fill="both", expand=True)
         container.grid_rowconfigure(0, weight=1)
@@ -72,10 +71,6 @@ class App(tk.Tk):
             page_name = F.__name__
             frame = F(parent=container, controller=self)
             self.frames[page_name] = frame
-
-            # put all of the pages in the same location;
-            # the one on the top of the stacking order
-            # will be the one that is visible.
             frame.grid(row=0, column=0, sticky="nsew")
 
         self.show_frame("StartPage")
@@ -391,7 +386,7 @@ class PhotogrammetryApp(tk.Frame):
         # Gather the selected options, including CUDA choice, to use in photogrammetry
         selected_values = {key: var.get() for key, var in self.selected_options.items()}
         selected_values["Use CUDA"] = self.use_cuda.get()
-        self.photogrammetry_button["state"] = "disabled"
+        self.photogrammetry_button.configure(state="disabled")
         threading.Thread(target=self.start_photogrammetry,args=[selected_values], daemon=True).start()
     
     def start_photogrammetry(self, options: dict):
@@ -408,7 +403,7 @@ class PhotogrammetryApp(tk.Frame):
         options.pop('Use CUDA', None)
         options_join = [f"{key}={value}" for key,value in options.items()]
         subprocess.run(["meshroom_batch", "--input", image_folder, "--output", output_folder, "--pipeline", graph_folder, "--cache", cache_folder, "--paramOverrides", *options_join])
-        self.photogrammetry_button["state"] = "normal"
+        self.photogrammetry_button.configure(state="normal")
 
 
         
