@@ -13,7 +13,8 @@ import subprocess
 from typing import Literal
 from zeroconf import Zeroconf, ServiceInfo
 import tkinter as tk
-from tkinter import font as tkfont
+from tkinter import messagebox, font as tkfont
+from PIL import Image, ImageTk
 import shutil
 
 #############################################
@@ -143,7 +144,7 @@ class App(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (StartPage, ImageReceiverApp, PhotogrammetryApp):
+        for F in (StartPage, ImageReceiverApp, ImageBrowserApp, PhotogrammetryApp):
             page_name = F.__name__
             frame = F(parent=container, controller=self)
             self.frames[page_name] = frame
@@ -169,15 +170,19 @@ class StartPage(tk.Frame):
         label.pack(side="top", fill="x", pady=5)
 
         main_frame = tk.Frame(self, relief="sunken", bd=2, width=100)
-        main_frame.pack(side="top", fill="y", pady=10, padx=10, expand=True)
+        main_frame.pack(side="top", pady=10, padx=10, expand=True)
 
         button1 = tk.Button(main_frame, text="Image receiver page",
                             command=lambda: controller.show_frame("ImageReceiverApp"))
         button1.pack(fill="x", pady=10, padx=10)
 
-        button2 = tk.Button(main_frame, text="Photogrammetry page",
-                            command=lambda: controller.show_frame("PhotogrammetryApp"))
+        button2 = tk.Button(main_frame, text="Image browser page",
+                            command=lambda: controller.show_frame("ImageBrowserApp"))
         button2.pack(fill="x", pady=10, padx=10)
+
+        button3 = tk.Button(main_frame, text="Photogrammetry page",
+                            command=lambda: controller.show_frame("PhotogrammetryApp"))
+        button3.pack(fill="x", pady=10, padx=10)
 
         quit_button = tk.Button(main_frame, text="Quit",
                             command=controller.destroy)
@@ -198,7 +203,7 @@ class ImageReceiverApp(tk.Frame):
         label.pack(side="top", fill="x", pady=5)
 
         main_frame = tk.Frame(self, relief="sunken", bd=2, width=100)
-        main_frame.pack(side="top", fill="y", pady=10, padx=10, expand=True)
+        main_frame.pack(side="top", pady=10, padx=10, expand=True)
 
         start_button = tk.Button(main_frame, text="Start service", command=self.start_service)
         start_button.pack(fill="x", pady=10, padx=10)
@@ -233,6 +238,97 @@ class ImageReceiverApp(tk.Frame):
             self.zeroconf = None
             self.service_thread = None
 
+class ImageBrowserApp(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+
+        label = tk.Label(self, text="Image Browser", font=controller.title_font)
+        label.pack(side="top", fill="x", pady=10)
+
+        # Frame for list of images
+        left_frame = tk.Frame(self, relief="sunken", bd=2)
+        left_frame.pack(side="left", fill="y", padx=5, pady=10)
+
+        right_frame = tk.Frame(self, relief="sunken", bd=2)
+        right_frame.pack(side="right", fill="both", expand=True, padx=5, pady=10)
+
+        # Listbox for images
+        self.image_listbox = tk.Listbox(right_frame, selectmode=tk.SINGLE)
+        self.image_listbox.pack(side="left", fill="both", expand=True)
+
+        # Scrollbar for listbox
+        self.scrollbar = tk.Scrollbar(right_frame, orient="vertical", command=self.image_listbox.yview)
+        self.scrollbar.pack(side="right", fill="y")
+        self.image_listbox.config(yscrollcommand=self.scrollbar.set)
+
+
+        delete_button = tk.Button(left_frame, text="Delete Selected", command=self.delete_selected_image)
+        delete_button.pack(padx=5, pady=5, fill='x')
+
+        delete_all_button = tk.Button(left_frame, text="Delete All", command=self.delete_all_images)
+        delete_all_button.pack(padx=5, pady=5, fill='x')
+
+        view_button = tk.Button(left_frame, text="View Selected", command=self.view_selected_image)
+        view_button.pack(padx=5, pady=5, fill='x')
+
+        return_button = tk.Button(left_frame, text="Return", command=lambda: controller.show_frame("StartPage"))
+        return_button.pack(padx=5, pady=5, fill='x')
+
+        self.refresh_image_list()
+
+    def refresh_image_list(self):
+        """Refreshes the listbox with images in UPLOAD_FOLDER."""
+        self.image_listbox.delete(0, tk.END)
+        if not os.path.exists(UPLOAD_FOLDER):
+            os.makedirs(UPLOAD_FOLDER)
+        images = [img for img in os.listdir(UPLOAD_FOLDER) if img.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp'))]
+        for image in images:
+            self.image_listbox.insert(tk.END, image)
+
+    def delete_selected_image(self):
+        """Deletes the selected image from the list and filesystem."""
+        selected_image = self.image_listbox.get(tk.ACTIVE)
+        if selected_image:
+            confirm = messagebox.askyesno("Delete Image", f"Are you sure you want to delete '{selected_image}'?")
+            if confirm:
+                os.remove(os.path.join(UPLOAD_FOLDER, selected_image))
+                self.refresh_image_list()
+                messagebox.showinfo("Deleted", f"'{selected_image}' has been deleted.")
+        else:
+            messagebox.showwarning("No Selection", "Please select an image to delete.")
+
+    def delete_all_images(self):
+        """Deletes all images in the UPLOAD_FOLDER."""
+        confirm = messagebox.askyesno("Delete All Images", "Are you sure you want to delete all images?")
+        if confirm:
+            for image in os.listdir(UPLOAD_FOLDER):
+                if image.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp')):
+                    os.remove(os.path.join(UPLOAD_FOLDER, image))
+            self.refresh_image_list()
+            messagebox.showinfo("Deleted", "All images have been deleted.")
+
+    def view_selected_image(self):
+        """Opens a new window to display the selected image."""
+        selected_image = self.image_listbox.get(tk.ACTIVE)
+        if selected_image:
+            img_path = os.path.join(UPLOAD_FOLDER, selected_image)
+            img = Image.open(img_path)
+            img.thumbnail((400, 400))  # Resize for display
+            img_tk = ImageTk.PhotoImage(img)
+
+            # New window to display the image
+            view_window = tk.Toplevel(self)
+            view_window.title(selected_image)
+
+            img_label = tk.Label(view_window, image=img_tk)
+            img_label.image = img_tk  # Keep reference to avoid garbage collection
+            img_label.pack()
+
+            close_button = tk.Button(view_window, text="Close", command=view_window.destroy)
+            close_button.pack(pady=10)
+        else:
+            messagebox.showwarning("No Selection", "Please select an image to view.")
 
 class PhotogrammetryApp(tk.Frame):
 
