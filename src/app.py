@@ -107,22 +107,6 @@ def start_mdns_service():
     log("Usługa mDNS zarejestrowana.")
     return zeroconf
 
-def start_photogrammetry(options: dict, button: tk.Button):
-    image_folder = UPLOAD_FOLDER
-    output_folder = MODEL_FOLDER
-    cache_folder = os.path.abspath("./MeshroomCache")
-    if os.path.exists('./MeshroomCache'):
-        shutil.rmtree(os.path.abspath("./MeshroomCache"))
-    if options["Use CUDA"]:
-        graph_folder = "./src/graphs/cuda_2048.mg"
-    else:
-        graph_folder = "./src/graphs/draft_2048.mg"
-        options.pop('DepthMap:downscale', None)
-    options.pop('Use CUDA', None)
-    options_join = [f"{key}={value}" for key,value in options.items()]
-    subprocess.run(["meshroom_batch", "--input", image_folder, "--output", output_folder, "--pipeline", graph_folder, "--cache", cache_folder, "--paramOverrides", *options_join])
-    button["state"] = "normal"
-
 #############################################
 #                   GUI
 #############################################
@@ -329,6 +313,7 @@ class ImageBrowserApp(tk.Frame):
         else:
             messagebox.showwarning("No Selection", "Please select an image to view.")
 
+
 class PhotogrammetryApp(tk.Frame):
 
     def __init__(self, parent, controller):
@@ -363,9 +348,9 @@ class PhotogrammetryApp(tk.Frame):
         option_frame.pack(side="left", fill="both", expand=True, padx=10, pady=10)
 
         # Start photogrammetry button on the left side
-        photogrammetry_button = tk.Button(left_frame, text="Start",
-                                          command=lambda: self.new_photogrammetry_thread(photogrammetry_button))
-        photogrammetry_button.pack(padx=5, pady=5, fill='x')
+        self.photogrammetry_button = tk.Button(left_frame, text="Start",
+                                          command=lambda: self.new_photogrammetry_thread())
+        self.photogrammetry_button.pack(padx=5, pady=5, fill='x')
 
         # Return button on the left side
         return_button = tk.Button(left_frame, text="Return",
@@ -401,12 +386,28 @@ class PhotogrammetryApp(tk.Frame):
         else:
             self.depthmap_menu.configure(state="disabled")
 
-    def new_photogrammetry_thread(self, button: tk.Button):
+    def new_photogrammetry_thread(self):
         # Gather the selected options, including CUDA choice, to use in photogrammetry
         selected_values = {key: var.get() for key, var in self.selected_options.items()}
         selected_values["Use CUDA"] = self.use_cuda.get()
-        button["state"] = "disabled"
-        threading.Thread(target=start_photogrammetry,args=[selected_values, button], daemon=True).start()
+        self.photogrammetry_button["state"] = "disabled"
+        threading.Thread(target=self.start_photogrammetry,args=[selected_values], daemon=True).start()
+    
+    def start_photogrammetry(self, options: dict):
+        image_folder = UPLOAD_FOLDER
+        output_folder = MODEL_FOLDER
+        cache_folder = os.path.abspath("./MeshroomCache")
+        if os.path.exists('./MeshroomCache'):
+            shutil.rmtree(os.path.abspath("./MeshroomCache"))
+        if options["Use CUDA"]:
+            graph_folder = "./src/graphs/cuda_2048.mg"
+        else:
+            graph_folder = "./src/graphs/draft_2048.mg"
+            options.pop('DepthMap:downscale', None)
+        options.pop('Use CUDA', None)
+        options_join = [f"{key}={value}" for key,value in options.items()]
+        subprocess.run(["meshroom_batch", "--input", image_folder, "--output", output_folder, "--pipeline", graph_folder, "--cache", cache_folder, "--paramOverrides", *options_join])
+        self.photogrammetry_button["state"] = "normal"
 
 
         
