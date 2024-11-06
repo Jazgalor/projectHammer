@@ -243,7 +243,7 @@ class ImageBrowserApp(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.controller = controller
 
-        label = tk.Label(self, text="Image Browser", font=controller.title_font)
+        label = tk.Label(self, text="Image browser page", font=controller.title_font)
         label.pack(side="top", fill="x", pady=10)
 
         # Frame for list of images
@@ -262,15 +262,14 @@ class ImageBrowserApp(tk.Frame):
         self.scrollbar.pack(side="right", fill="y")
         self.image_listbox.config(yscrollcommand=self.scrollbar.set)
 
+        view_button = tk.Button(left_frame, text="View Selected", command=self.view_selected_image)
+        view_button.pack(padx=5, pady=5, fill='x')
 
         delete_button = tk.Button(left_frame, text="Delete Selected", command=self.delete_selected_image)
         delete_button.pack(padx=5, pady=5, fill='x')
 
         delete_all_button = tk.Button(left_frame, text="Delete All", command=self.delete_all_images)
         delete_all_button.pack(padx=5, pady=5, fill='x')
-
-        view_button = tk.Button(left_frame, text="View Selected", command=self.view_selected_image)
-        view_button.pack(padx=5, pady=5, fill='x')
 
         return_button = tk.Button(left_frame, text="Return", command=lambda: controller.show_frame("StartPage"))
         return_button.pack(padx=5, pady=5, fill='x')
