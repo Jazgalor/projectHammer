@@ -251,6 +251,9 @@ class ImageBrowserApp(tk.Frame):
         delete_all_button = tk.Button(left_frame, text="Delete All", command=self.delete_all_images)
         delete_all_button.pack(padx=5, pady=5, fill='x')
 
+        refresh_button = tk.Button(left_frame, text="Refresh", command=self.refresh_image_list)
+        refresh_button.pack(padx=5, pady=5, fill='x')
+
         return_button = tk.Button(left_frame, text="Return", command=lambda: controller.show_frame("StartPage"))
         return_button.pack(padx=5, pady=5, fill='x')
 
