@@ -110,11 +110,9 @@ class StartPage(tk.Frame):
 class ImageReceiverApp(tk.Frame):
     
     service_thread = None
-
     zeroconf = None
 
     def __init__(self, parent, controller):
-
         tk.Frame.__init__(self, parent)
         self.controller = controller
         
@@ -134,8 +132,7 @@ class ImageReceiverApp(tk.Frame):
                             command=lambda: controller.show_frame("StartPage"))
         return_button.pack(fill="x", pady=10, padx=10)
 
-
-    def start_services(self, ):
+    def start_services(self):
         global SERVICE_IS_RUNNING
         SERVICE_IS_RUNNING = True
         self.zeroconf = self.start_mdns_service()
@@ -147,15 +144,23 @@ class ImageReceiverApp(tk.Frame):
         if self.zeroconf:
             SERVICE_IS_RUNNING = False
             self.zeroconf.close()
-            # function for unregistering is not necessary
-            # zeroconf.unregister_service(ServiceInfo(
-            #     SERVICE_TYPE, SERVICE_NAME, SERVICE_PORT,
-            #     0,
-            #     0,
-            #     {},
-            #     "ImageTransferService.local.")) 
             self.zeroconf = None
             self.service_thread = None
+
+    def start_mdns_service(self):
+        local_ip = socket.gethostbyname(socket.gethostname())
+        zeroconf = Zeroconf()
+        service_info = ServiceInfo(
+            SERVICE_TYPE,
+            SERVICE_NAME,
+            addresses=[socket.inet_aton(local_ip)],
+            port=SERVICE_PORT,
+            properties={},
+            server=f"PhotoScanner.local."
+        )
+        zeroconf.register_service(service_info)
+        log(f"Zarejestrowano usługę mDNS na IP: {local_ip}")
+        return zeroconf
 
     # Funkcja odbierająca pliki
     def start_receive_service(self):
@@ -172,51 +177,54 @@ class ImageReceiverApp(tk.Frame):
                 conn, addr = server_socket.accept()
                 log(f"Odebrano połączenie z: {addr}")
 
-                # Odbieranie nazwy pliku
-                file_name = conn.recv(BUFFER_SIZE).decode().strip()
-                if not file_name:
-                    log("Nie udało się odebrać nazwy pliku.")
-                    conn.close()
-                    continue
+                # Read number of files first
+                num_files = int(conn.recv(BUFFER_SIZE).decode().strip())
+                log(f"Oczekiwana liczba plików: {num_files}")
 
-                file_path = os.path.join(UPLOAD_FOLDER, file_name)
-                with open(file_path, 'wb') as f:
-                    log(f"Zapisywanie pliku: {file_path}")
+                for i in range(num_files):
+                    # Read file name
+                    file_name = ""
                     while True:
-                        data = conn.recv(BUFFER_SIZE)
-                        if not data:
-                            break
-                        f.write(data)
+                        char = conn.recv(1).decode()
+                        if char == '\n': break
+                        file_name += char
+                    
+                    # Read file size
+                    file_size = ""
+                    while True:
+                        char = conn.recv(1).decode()
+                        if char == '\n': break
+                        file_size += char
+                    file_size = int(file_size)
+                    
+                    log(f"Odbieranie pliku {i+1}/{num_files}: {file_name} ({file_size} bajtów)")
+                    
+                    # Save file
+                    file_path = os.path.join(UPLOAD_FOLDER, file_name)
+                    with open(file_path, 'wb') as f:
+                        bytes_received = 0
+                        while bytes_received < file_size:
+                            chunk = conn.recv(min(BUFFER_SIZE, file_size - bytes_received))
+                            if not chunk: break
+                            f.write(chunk)
+                            bytes_received += len(chunk)
+                    
+                    log(f"Zapisano plik: {file_path}")
 
-                log(f"Plik {file_name} zapisany.")
                 conn.close()
+                log("Zakończono odbieranie plików")
+                
             except TimeoutError:
                 continue
             except OSError:
                 break
-            except UnicodeDecodeError:
-                conn.close()
+            except Exception as e:
+                log(f"Błąd: {str(e)}")
+                if 'conn' in locals():
+                    conn.close()
                 continue
-        log('End of service')
-
-    # Funkcja do rozgłaszania usługi mDNS
-    def start_mdns_service(self):
-        host_ip = socket.gethostbyname(socket.gethostname())
-        zeroconf = Zeroconf()
-        service_info = ServiceInfo(
-            SERVICE_TYPE,
-            SERVICE_NAME,
-            SERVICE_PORT,
-            0,
-            0,
-            {},
-            "ImageTransferService.local.",
-            addresses=[socket.inet_aton(host_ip)],
-        )
-
-        zeroconf.register_service(service_info)
-        log("Usługa mDNS zarejestrowana.")
-        return zeroconf
+        
+        log('Zakończono usługę')
 
 class ImageBrowserApp(tk.Frame):
     def __init__(self, parent, controller):
@@ -408,8 +416,6 @@ class PhotogrammetryApp(tk.Frame):
         subprocess.run(["meshroom_batch", "--input", image_folder, "--output", output_folder, "--pipeline", graph_folder, "--cache", cache_folder, "--paramOverrides", *options_join])
         self.photogrammetry_button.configure(state="normal")
 
-
-        
 
 #############################################
 #                  MAIN
