@@ -55,7 +55,7 @@
                 android:gravity="center"
                 android:paddingHorizontal="16dp"
                 android:paddingVertical="8dp"
-                android:text="Wykonaj przynajmniej 5 zdjęć z każdej strony obiektu"
+                android:text="Wykonaj przynajmniej 4 zdjęcia z każdej strony obiektu"
                 android:textColor="#FFFFFF"
                 android:textSize="14sp" />
 
@@ -196,16 +196,13 @@
 
     <com.google.android.material.progressindicator.CircularProgressIndicator
         android:id="@+id/coverageProgress"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:max="360"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_gravity="center"
         android:progress="0"
-        app:indicatorColor="#4CAF50"
-        app:indicatorDirectionCircular="clockwise"
-        app:indicatorSize="80dp"
-        app:layout_anchor="@+id/frameLayout"
-        app:layout_anchorGravity="center"
-        app:trackColor="#4DFFFFFF"
-        app:trackThickness="4dp" />
+        app:indicatorColor="#FF0000"
+        app:indicatorSize="200dp"
+        app:trackColor="#33000000"
+        app:trackThickness="8dp" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
