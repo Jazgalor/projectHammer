@@ -63,9 +63,9 @@ class CameraActivity : AppCompatActivity() {
     private lateinit var outputDirectory: File
     private val photoUris = mutableListOf<Uri>()
     private val sectorColors = listOf(
-        android.graphics.Color.parseColor("#FF0000"), // Red
-        android.graphics.Color.parseColor("#FFA500"), // Orange
-        android.graphics.Color.parseColor("#32CD32")  // Green
+        android.graphics.Color.parseColor("#FF0000"), // Czerwony
+        android.graphics.Color.parseColor("#FFA500"), // Pomarańczowy
+        android.graphics.Color.parseColor("#32CD32")  // Zielony
     )
 
     private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
@@ -89,17 +89,17 @@ class CameraActivity : AppCompatActivity() {
         binding = ActivityCameraBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Initialize sensors
+        // Inicjalizacja czujników
         sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
         rotationSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR)
 
-        // Initialize camera executor
+        // Inicjalizacja wykonywania aparatu
         cameraExecutor = Executors.newSingleThreadExecutor()
 
-        // Initialize output directory
+        // Inicjalizacja katalogu wyjściowego
         outputDirectory = getOutputDirectory()
 
-        // Initialize photoAdapter
+        // Inicjalizacja adaptera zdjęć
         photoAdapter = PhotoAdapter { position ->
             photoAdapter.removePhoto(position)
             photoCount--
@@ -111,7 +111,7 @@ class CameraActivity : AppCompatActivity() {
 
         serverDiscoveryManager = ServerDiscoveryManager(this)
 
-        // Setup tap to focus
+        // Konfiguracja dotykowego ustawiania ostrości
         binding.viewFinder.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
@@ -128,7 +128,7 @@ class CameraActivity : AppCompatActivity() {
             }
         }
 
-        // Handle media button events (DJI Osmo button)
+        // Obsługa przycisków mediów (przycisk DJI Osmo)
         volumeButtonReceiver = object : BroadcastReceiver() {
             override fun onReceive(context: Context?, intent: Intent?) {
                 if (intent?.action == Intent.ACTION_MEDIA_BUTTON) {
@@ -141,7 +141,7 @@ class CameraActivity : AppCompatActivity() {
                     if ((event?.keyCode == KeyEvent.KEYCODE_VOLUME_DOWN || 
                          event?.keyCode == KeyEvent.KEYCODE_VOLUME_UP) && 
                         event.action == KeyEvent.ACTION_DOWN) {
-                        // Trigger photo capture when Osmo button is pressed
+                        // Wykonaj zdjęcie po naciśnięciu przycisku Osmo
                         takePhoto()
                     }
                 }
@@ -159,7 +159,7 @@ class CameraActivity : AppCompatActivity() {
             requestPermissionLauncher.launch(REQUIRED_PERMISSIONS)
         }
 
-        // Show initial instruction
+        // Pokaż początkową instrukcję
         Toast.makeText(
             this,
             "Ustaw obiekt na środku i zrób pierwsze zdjęcie",
@@ -180,7 +180,7 @@ class CameraActivity : AppCompatActivity() {
         return when (keyCode) {
             KeyEvent.KEYCODE_VOLUME_DOWN,
             KeyEvent.KEYCODE_VOLUME_UP -> {
-                // Handle Osmo button press
+                // Wykonaj zdjęcie po naciśnięciu przycisku Osmo
                 takePhoto()
                 true
             }
@@ -192,17 +192,17 @@ class CameraActivity : AppCompatActivity() {
         private val rotationMatrix = FloatArray(9)
         private val orientationAngles = FloatArray(3)
         private var lastProcessedAngle = 0f
-        private val ANGLE_THRESHOLD = 5f // Minimum angle change to process
+        private val ANGLE_THRESHOLD = 5f // Minimalna zmiana kąta do przetworzenia
 
         override fun onSensorChanged(event: SensorEvent) {
-            // Convert rotation vector to orientation angles
+            // Konwertuj wektor obrotu na kąty orientacji
             SensorManager.getRotationMatrixFromVector(rotationMatrix, event.values)
             SensorManager.getOrientation(rotationMatrix, orientationAngles)
             
-            // Get azimuth (rotation around Y-axis) in degrees
+            // Pobierz azymut (obrót wokół osi Y) w stopniach
             val newOrientation = Math.toDegrees(orientationAngles[0].toDouble()).toFloat()
             
-            // Only process if angle changed significantly
+            // Przetwórz tylko wtedy, gdy kąt się zmienił znacząco
             if (Math.abs(newOrientation - lastProcessedAngle) > ANGLE_THRESHOLD) {
                 currentOrientation = newOrientation
                 lastProcessedAngle = newOrientation
@@ -210,7 +210,7 @@ class CameraActivity : AppCompatActivity() {
         }
 
         override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-            // Handle accuracy changes if needed
+            // Obsłuż zmiany dokładności, jeśli potrzebne
         }
     }
 
@@ -227,7 +227,7 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun setupUI() {
-        // Setup bottom sheet behavior
+        // Konfiguracja zachowania dolnego arkusza
         bottomSheetBehavior = BottomSheetBehavior.from(binding.bottomSheet)
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
 
@@ -235,16 +235,16 @@ class CameraActivity : AppCompatActivity() {
             bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
         }
 
-        // Setup photo grid
+        // Konfiguracja siatki zdjęć
         binding.photoGrid.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         binding.photoGrid.adapter = photoAdapter
         
-        // Set click listener for photos
+        // Ustaw słuchacza kliknięć zdjęć
         photoAdapter.onPhotoClicked = { uri ->
             showPhotoPreview(uri)
         }
 
-        // Update photo counter
+        // Aktualizuj licznik zdjęć
         updatePhotoCounter()
 
         binding.galleryButton.setOnClickListener {
@@ -268,7 +268,7 @@ class CameraActivity : AppCompatActivity() {
     private fun setupDoneButton() {
         binding.doneButton.setOnClickListener {
             if (photoCount < REQUIRED_PHOTOS) {
-                // Show warning dialog
+                // Pokaż ostrzegawcze okno dialogowe
                 android.app.AlertDialog.Builder(this)
                     .setTitle("Za mało zdjęć")
                     .setMessage("Zalecane minimum to 4 zdjęcia. Wysłać mimo to?")
@@ -284,7 +284,7 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun startServerDiscovery() {
-        // Show searching dialog
+        // Pokaż okno dialogowe wyszukiwania
         val progressDialog = AlertDialog.Builder(this)
             .setTitle("Szukanie serwera")
             .setMessage("Szukam serwera w sieci lokalnej...")
@@ -300,7 +300,7 @@ class CameraActivity : AppCompatActivity() {
             }
             .show()
 
-        // Start timeout handler
+        // Uruchom obsługę czasu
         Handler(Looper.getMainLooper()).postDelayed({
             if (progressDialog.isShowing) {
                 progressDialog.dismiss()
@@ -312,14 +312,14 @@ class CameraActivity : AppCompatActivity() {
                     .setNegativeButton("Nie", null)
                     .show()
             }
-        }, 10000) // 10 second timeout
+        }, 10000) // 10 sekundowy limit czasu
 
-        // Start server discovery
+        // Uruchom wyszukiwanie serwera
         serverDiscoveryManager.startDiscovery { serverIp, _ ->
             runOnUiThread {
                 progressDialog.dismiss()
                 
-                // Show confirmation dialog
+                // Pokaż okno dialogowe potwierdzenia
                 AlertDialog.Builder(this)
                     .setTitle("Znaleziono serwer")
                     .setMessage("Czy chcesz wysłać zdjęcia do serwera: $serverIp?")
@@ -333,10 +333,10 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun proceedWithSending() {
-        // Disable the button to prevent double-clicks
+        // Wyłącz przycisk, aby zapobiec podwójnemu kliknięciu
         binding.doneButton.isEnabled = false
 
-        // Create intent to return to MainActivity
+        // Utwórz zamiar do powrotu do MainActivity
         val resultIntent = Intent().apply {
             putExtra("photoUris", ArrayList(photoUris))
         }
@@ -377,15 +377,15 @@ class CameraActivity : AppCompatActivity() {
         binding.photoCounter.text = "${photoAdapter.itemCount}/4"
         binding.photoCounterText.text = "${photoAdapter.itemCount}"
         
-        // Update progress indicator colors based on photo count
+        // Aktualizuj kolor wskaźnika postępu w zależności od liczby zdjęć
         val progress = (photoAdapter.itemCount.toFloat() / REQUIRED_PHOTOS.toFloat()) * 100
         updateProgressIndicator(progress)
 
-        // Update top counter color based on photo count
+        // Aktualizuj kolor górnego licznika w zależności od liczby zdjęć
         val textColor = when {
-            photoAdapter.itemCount >= REQUIRED_PHOTOS -> android.graphics.Color.parseColor("#32CD32") // Green
-            photoAdapter.itemCount >= 3 -> android.graphics.Color.parseColor("#FFA500") // Orange
-            else -> android.graphics.Color.parseColor("#FF0000") // Red
+            photoAdapter.itemCount >= REQUIRED_PHOTOS -> android.graphics.Color.parseColor("#32CD32") // Zielony
+            photoAdapter.itemCount >= 3 -> android.graphics.Color.parseColor("#FFA500") // Pomarańczowy
+            else -> android.graphics.Color.parseColor("#FF0000") // Czerwony
         }
         binding.photoCounterText.setTextColor(textColor)
     }
@@ -393,7 +393,7 @@ class CameraActivity : AppCompatActivity() {
     private fun takePhoto() {
         val imageCapture = imageCapture ?: return
 
-        // Create output file
+        // Utwórz plik wyjściowy
         val photoFile = File(
             outputDirectory,
             "IMG_${System.currentTimeMillis()}.jpg"
@@ -410,22 +410,22 @@ class CameraActivity : AppCompatActivity() {
                     photoUris.add(savedUri)
                     photoCount++
                     
-                    // Update UI
+                    // Aktualizuj interfejs użytkownika
                     runOnUiThread {
-                        // Update photo gallery
+                        // Aktualizuj galerię zdjęć
                         photoAdapter.addPhoto(savedUri)
 
                         updatePhotoCounter()
                         val progress = (photoCount.toFloat() / REQUIRED_PHOTOS) * 100
                         updateProgressIndicator(progress)
 
-                        // Show guidance message
+                        // Pokaż komunikat przewodnika
                         val message = when (photoCount) {
                             1 -> "Przejdź w prawo o około 90°"
                             2 -> "Dobrze! Jeszcze raz w prawo o 90°"
                             3 -> "Świetnie! Ostatnia pozycja"
                             4 -> "Gotowe!"
-                            else -> "" // No message after 4 photos
+                            else -> "" // Brak komunikatu po 4 zdjęciach
                         }
                         if (message.isNotEmpty()) {
                             Toast.makeText(this@CameraActivity, message, Toast.LENGTH_SHORT).show()
@@ -434,7 +434,7 @@ class CameraActivity : AppCompatActivity() {
                 }
 
                 override fun onError(exc: ImageCaptureException) {
-                    Log.e(TAG, "Photo capture failed: ${exc.message}", exc)
+                    Log.e(TAG, "Błąd wykonania zdjęcia: ${exc.message}", exc)
                 }
             }
         )
@@ -454,10 +454,10 @@ class CameraActivity : AppCompatActivity() {
 
             imageCapture = ImageCapture.Builder()
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
-                .setTargetAspectRatio(AspectRatio.RATIO_4_3)  // Match preview aspect ratio
+                .setTargetResolution(Size(4000, 3000))  // 12 MP resolution
                 .setTargetRotation(binding.viewFinder.display.rotation)
                 .setFlashMode(ImageCapture.FLASH_MODE_AUTO)
-                .setJpegQuality(95)
+                .setJpegQuality(100)  // Maximum quality
                 .build()
 
             val cameraSelector = CameraSelector.Builder()
@@ -473,13 +473,13 @@ class CameraActivity : AppCompatActivity() {
                     imageCapture
                 )
 
-                // Enable auto-focus
+                // Włącz autofocus
                 camera.cameraControl.enableTorch(false)
                 camera.cameraInfo.zoomState.observe(this) { _ ->
-                    // Optional: Add zoom controls if needed in the future
+                    // Opcjonalnie: Dodaj kontrolę zoomu, jeśli potrzebna w przyszłości
                 }
 
-                // Set up initial focus mode
+                // Ustaw początkowy tryb autofocusu
                 val factory = binding.viewFinder.meteringPointFactory
                 val centerPoint = factory.createPoint(
                     binding.viewFinder.width / 2f,
@@ -491,7 +491,7 @@ class CameraActivity : AppCompatActivity() {
                 camera.cameraControl.startFocusAndMetering(action)
 
             } catch (exc: Exception) {
-                Log.e(TAG, "Use case binding failed", exc)
+                Log.e(TAG, "Błąd wiązania przypadku użycia", exc)
             }
         }, ContextCompat.getMainExecutor(this))
     }
@@ -526,11 +526,11 @@ class CameraActivity : AppCompatActivity() {
     private fun updateProgressIndicator(progress: Float) {
         binding.coverageProgress.progress = progress.toInt()
 
-        // Color based only on total photos
+        // Kolor oparty tylko na całkowitej liczbie zdjęć
         val color = when {
-            photoAdapter.itemCount >= REQUIRED_PHOTOS -> sectorColors[2] // Green when 4+ photos
-            photoAdapter.itemCount >= 3 -> sectorColors[1] // Orange when getting close
-            else -> sectorColors[0] // Red at start
+            photoAdapter.itemCount >= REQUIRED_PHOTOS -> sectorColors[2] // Zielony przy 4+ zdjęciach
+            photoAdapter.itemCount >= 3 -> sectorColors[1] // Pomarańczowy przy zbliżaniu się
+            else -> sectorColors[0] // Czerwony na początku
         }
 
         binding.coverageProgress.setIndicatorColor(color)
@@ -540,6 +540,6 @@ class CameraActivity : AppCompatActivity() {
     companion object {
         private const val TAG = "CameraActivity"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
-        private const val REQUIRED_PHOTOS: Int = 4
+        private const val REQUIRED_PHOTOS = 4 // Wymagana liczba zdjęć
     }
 }
