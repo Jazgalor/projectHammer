@@ -8,9 +8,9 @@
     <androidx.camera.view.PreviewView
         android:id="@+id/viewFinder"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
-
-    </androidx.camera.view.PreviewView>
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        app:scaleType="fillCenter" />
 
     <FrameLayout
         android:id="@+id/frameLayout"
@@ -137,60 +137,75 @@
     </LinearLayout>
 
     <androidx.core.widget.NestedScrollView
-        android:id="@+id/bottomSheet"
+        android:id="@+id/bottom_sheet"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="#FFFFFF"
+        android:maxHeight="200dp"
+        android:background="@drawable/bottom_sheet_background"
+        android:elevation="16dp"
+        android:fillViewport="true"
+        android:scrollbars="none"
+        android:overScrollMode="never"
         app:behavior_hideable="true"
         app:behavior_peekHeight="0dp"
+        app:behavior_skipCollapsed="true"
         app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:orientation="vertical">
 
-            <RelativeLayout
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp">
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="8dp">
 
                 <TextView
-                    android:id="@+id/photoCounter"
+                    android:id="@+id/photo_counter"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="0/4"
+                    android:textSize="16sp" />
+
+                <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_centerHorizontal="true"
-                    android:text="0/5 (minimum 5)"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:text="Przytrzymaj zdjęcie aby usunąć"
+                    android:textSize="12sp"
+                    android:textColor="#757575"/>
 
                 <ImageButton
-                    android:id="@+id/closeButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
+                    android:id="@+id/close_button"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:padding="8dp"
-                    android:src="@android:drawable/ic_menu_close_clear_cancel"
-                    app:tint="#757575" />
-            </RelativeLayout>
+                    android:contentDescription="Zamknij"
+                    android:src="@android:drawable/ic_menu_close_clear_cancel" />
+            </LinearLayout>
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginBottom="16dp"
-                android:text="Przytrzymaj aby usunąć zdjęcie"
-                android:textColor="#757575"
-                android:textSize="14sp" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/photoGrid"
+            <HorizontalScrollView
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:orientation="horizontal" />
+                android:layout_height="wrap_content"
+                android:scrollbars="none"
+                android:overScrollMode="never"
+                android:clipToPadding="false">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/photo_grid"
+                    android:layout_width="wrap_content"
+                    android:layout_height="120dp"
+                    android:layout_marginVertical="16dp"
+                    android:clipToPadding="false"
+                    android:overScrollMode="never"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="16dp" />
+
+            </HorizontalScrollView>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

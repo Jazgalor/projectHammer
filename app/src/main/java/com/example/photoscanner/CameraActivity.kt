@@ -236,14 +236,16 @@ class CameraActivity : AppCompatActivity() {
         }
 
         // Setup photo grid
+        binding.photoGrid.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        binding.photoGrid.adapter = photoAdapter
+        
+        // Set click listener for photos
         photoAdapter.onPhotoClicked = { uri ->
             showPhotoPreview(uri)
         }
 
-        binding.photoGrid.apply {
-            layoutManager = LinearLayoutManager(this@CameraActivity, LinearLayoutManager.HORIZONTAL, false)
-            adapter = photoAdapter
-        }
+        // Update photo counter
+        updatePhotoCounter()
 
         binding.galleryButton.setOnClickListener {
             if (photoCount > 0) {
@@ -372,30 +374,20 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun updatePhotoCounter() {
-        binding.photoCounterText.text = "$photoCount"
-        binding.photoCounter.text = "$photoCount/4"
+        binding.photoCounter.text = "${photoAdapter.itemCount}/4"
+        binding.photoCounterText.text = "${photoAdapter.itemCount}"
         
-        // Change color based on total photos
+        // Update progress indicator colors based on photo count
+        val progress = (photoAdapter.itemCount.toFloat() / REQUIRED_PHOTOS.toFloat()) * 100
+        updateProgressIndicator(progress)
+
+        // Update top counter color based on photo count
         val textColor = when {
-            photoCount >= REQUIRED_PHOTOS -> android.graphics.Color.parseColor("#32CD32") // Green
-            photoCount >= 3 -> android.graphics.Color.parseColor("#FFA500") // Orange
+            photoAdapter.itemCount >= REQUIRED_PHOTOS -> android.graphics.Color.parseColor("#32CD32") // Green
+            photoAdapter.itemCount >= 3 -> android.graphics.Color.parseColor("#FFA500") // Orange
             else -> android.graphics.Color.parseColor("#FF0000") // Red
         }
         binding.photoCounterText.setTextColor(textColor)
-    }
-
-    private fun updateProgressIndicator(progress: Float) {
-        binding.coverageProgress.progress = progress.toInt()
-
-        // Color based only on total photos
-        val color = when {
-            photoCount >= REQUIRED_PHOTOS -> sectorColors[2] // Green when 4+ photos
-            photoCount >= 3 -> sectorColors[1] // Orange when getting close
-            else -> sectorColors[0] // Red at start
-        }
-
-        binding.coverageProgress.setIndicatorColor(color)
-        binding.rotateIcon.setColorFilter(color)
     }
 
     private fun takePhoto() {
@@ -422,9 +414,6 @@ class CameraActivity : AppCompatActivity() {
                     runOnUiThread {
                         // Update photo gallery
                         photoAdapter.addPhoto(savedUri)
-                        if (bottomSheetBehavior.state == BottomSheetBehavior.STATE_HIDDEN && photoCount == 1) {
-                            bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-                        }
 
                         updatePhotoCounter()
                         val progress = (photoCount.toFloat() / REQUIRED_PHOTOS) * 100
@@ -465,7 +454,8 @@ class CameraActivity : AppCompatActivity() {
 
             imageCapture = ImageCapture.Builder()
                 .setCaptureMode(ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY)
-                .setTargetResolution(Size(1920, 1440)) // 4:3 aspect ratio with good resolution
+                .setTargetAspectRatio(AspectRatio.RATIO_4_3)  // Match preview aspect ratio
+                .setTargetRotation(binding.viewFinder.display.rotation)
                 .setFlashMode(ImageCapture.FLASH_MODE_AUTO)
                 .setJpegQuality(95)
                 .build()
@@ -531,6 +521,20 @@ class CameraActivity : AppCompatActivity() {
             File(it, resources.getString(R.string.app_name)).apply { mkdirs() }
         }
         return if (mediaDir != null && mediaDir.exists()) mediaDir else filesDir
+    }
+
+    private fun updateProgressIndicator(progress: Float) {
+        binding.coverageProgress.progress = progress.toInt()
+
+        // Color based only on total photos
+        val color = when {
+            photoAdapter.itemCount >= REQUIRED_PHOTOS -> sectorColors[2] // Green when 4+ photos
+            photoAdapter.itemCount >= 3 -> sectorColors[1] // Orange when getting close
+            else -> sectorColors[0] // Red at start
+        }
+
+        binding.coverageProgress.setIndicatorColor(color)
+        binding.rotateIcon.setColorFilter(color)
     }
 
     companion object {
