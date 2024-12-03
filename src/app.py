@@ -404,8 +404,10 @@ class PhotogrammetryApp(tk.Frame):
         image_folder = UPLOAD_FOLDER
         output_folder = MODEL_FOLDER
         cache_folder = os.path.abspath("./MeshroomCache")
-        # if os.path.exists('./MeshroomCache'):
-        #     shutil.rmtree(os.path.abspath("./MeshroomCache"))
+        confirm = messagebox.askyesno("Delete previous cache", f"Are you sure you want to delete previously cached data? (It must be done if there is a new set of images)")
+        if confirm:
+            if os.path.exists('./MeshroomCache'):
+                shutil.rmtree(os.path.abspath("./MeshroomCache"))
         if options["Use CUDA"]:
             graph_folder = "./src/graphs/cuda_2048.mg"
         else:
@@ -413,7 +415,7 @@ class PhotogrammetryApp(tk.Frame):
             options.pop('DepthMap:downscale', None)
         options.pop('Use CUDA', None)
         options_join = [f"{key}={value}" for key,value in options.items()]
-        subprocess.run(["meshroom_batch", "--input", image_folder, "--output", output_folder, "--pipeline", graph_folder, "--cache", cache_folder, "--paramOverrides", *options_join])
+        subprocess.run(["meshroom_batch", "--input", image_folder, "--output", output_folder, "--pipeline", graph_folder, "--cache", cache_folder, "--save", graph_folder, "--forceStatus", "--paramOverrides", *options_join])
         self.photogrammetry_button.configure(state="normal")
 
 
