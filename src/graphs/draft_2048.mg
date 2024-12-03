@@ -1,16 +1,16 @@
 {
     "header": {
         "nodesVersions": {
-            "Meshing": "7.0",
-            "MeshFiltering": "3.0",
             "FeatureExtraction": "1.3",
-            "Texturing": "6.0",
-            "PrepareDenseScene": "3.1",
-            "CameraInit": "9.0",
-            "StructureFromMotion": "3.3",
-            "FeatureMatching": "2.0",
             "ImageMatching": "2.0",
-            "Publish": "1.3"
+            "PrepareDenseScene": "3.1",
+            "FeatureMatching": "2.0",
+            "Publish": "1.3",
+            "MeshFiltering": "3.0",
+            "StructureFromMotion": "3.3",
+            "Meshing": "7.0",
+            "Texturing": "6.0",
+            "CameraInit": "9.0"
         },
         "releaseVersion": "2023.3.0",
         "fileVersion": "1.1",
@@ -29,7 +29,7 @@
                 "split": 1
             },
             "uids": {
-                "0": "311defef5c1a0bc04e2926cd7f13e4247b8a78f0"
+                "0": "3b5a8251c2760843b5076b7d3d676bbba4cf72a3"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -102,7 +102,7 @@
                 "split": 1
             },
             "uids": {
-                "0": "6bc683c8c98704f3cd2b4247a416b4c1fbd58034"
+                "0": "6d121ffd63195e2ccbfc66cb7d5ce2bbe718819c"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -192,7 +192,7 @@
                 "split": 1
             },
             "uids": {
-                "0": "d7ef9df2662f959e52744c452200090e4d6497c8"
+                "0": "3f6d55449fcb56f791824b0200fd318f4fbd7dbe"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -231,7 +231,7 @@
                 "split": 0
             },
             "uids": {
-                "0": "f84d4fbf328feaba4d1c1c94c77fc4072bf805a6"
+                "0": "246ba104f8da92d12c1d0cc5e6c6ee96afff8d9b"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -240,7 +240,8 @@
                 "maskExtension": "png",
                 "maskInvert": false,
                 "describerTypes": [
-                    "dspsift"
+                    "dspsift",
+                    "sift"
                 ],
                 "describerPreset": "high",
                 "maxNbFeatures": 0,
@@ -275,7 +276,7 @@
                 "split": 1
             },
             "uids": {
-                "0": "b0641481384530303317ce6ca539063b23f52ea3"
+                "0": "c4925f37a879d8e9bd42a6af8682e4363d2256fe"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -393,7 +394,7 @@
                 "split": 1
             },
             "uids": {
-                "0": "ae6b0a07737a987a6e08598aa81c6b53b35a1236"
+                "0": "0351348ec71c81886ee41159ce5dea09e68954ee"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -432,7 +433,7 @@
                 "split": 0
             },
             "uids": {
-                "0": "cc3f89ea1e5d2f9f7e96e9b79a004a5cc0fb05d9"
+                "0": "5b6e73caa59b33540817f191afd5cf8a0b85dd24"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -478,7 +479,7 @@
                 "split": 0
             },
             "uids": {
-                "0": "54aec84e39468da0420b6c8d31ea98c6f0d36cca"
+                "0": "8c9cdc4afda4d5d4c2db26c0ed90ed95578254a8"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -515,7 +516,7 @@
                 "split": 1
             },
             "uids": {
-                "0": "7b7e4ca2462ce8a5e9c4269e635dd778bca32ce1"
+                "0": "424498eed78c89f426eabf67fc163bce240fb3fe"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {

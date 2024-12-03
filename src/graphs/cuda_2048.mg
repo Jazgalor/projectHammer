@@ -5,17 +5,17 @@
         "fileVersion": "1.1",
         "template": false,
         "nodesVersions": {
-            "Meshing": "7.0",
-            "FeatureMatching": "2.0",
             "FeatureExtraction": "1.3",
-            "Texturing": "6.0",
             "ImageMatching": "2.0",
-            "DepthMapFilter": "4.0",
+            "PrepareDenseScene": "3.1",
+            "FeatureMatching": "2.0",
+            "Publish": "1.3",
             "MeshFiltering": "3.0",
             "StructureFromMotion": "3.3",
-            "PrepareDenseScene": "3.1",
+            "Meshing": "7.0",
+            "Texturing": "6.0",
+            "DepthMapFilter": "4.0",
             "DepthMap": "5.0",
-            "Publish": "1.3",
             "CameraInit": "9.0"
         }
     },
@@ -32,7 +32,7 @@
                 "split": 1
             },
             "uids": {
-                "0": "0acf59c8cf02eafa17975f1b750b18a019f9509b"
+                "0": "184af8a2a54c0815f68ff029579d12a760f974f3"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -105,7 +105,7 @@
                 "split": 1
             },
             "uids": {
-                "0": "c063885a3ed54028d05beb7dd635dbdb8a8abb2d"
+                "0": "66faf0d539adbfc3d1035db9bb4a0c804465c6b7"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -195,7 +195,7 @@
                 "split": 0
             },
             "uids": {
-                "0": "edada6b06a5fb2e29e0d494d3138887e0f9a6481"
+                "0": "2d6a801d97c080827f492b835475722dfc7b0d35"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -236,7 +236,7 @@
                 "split": 1
             },
             "uids": {
-                "0": "d7ef9df2662f959e52744c452200090e4d6497c8"
+                "0": "3f6d55449fcb56f791824b0200fd318f4fbd7dbe"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -275,7 +275,7 @@
                 "split": 0
             },
             "uids": {
-                "0": "f84d4fbf328feaba4d1c1c94c77fc4072bf805a6"
+                "0": "246ba104f8da92d12c1d0cc5e6c6ee96afff8d9b"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -284,7 +284,8 @@
                 "maskExtension": "png",
                 "maskInvert": false,
                 "describerTypes": [
-                    "dspsift"
+                    "dspsift",
+                    "sift"
                 ],
                 "describerPreset": "high",
                 "maxNbFeatures": 0,
@@ -319,7 +320,7 @@
                 "split": 1
             },
             "uids": {
-                "0": "b0641481384530303317ce6ca539063b23f52ea3"
+                "0": "c4925f37a879d8e9bd42a6af8682e4363d2256fe"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -386,7 +387,7 @@
                 "split": 0
             },
             "uids": {
-                "0": "54aec84e39468da0420b6c8d31ea98c6f0d36cca"
+                "0": "8c9cdc4afda4d5d4c2db26c0ed90ed95578254a8"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -474,7 +475,7 @@
                 "split": 0
             },
             "uids": {
-                "0": "44a2933080375d68dd84291bba1a7510a9306ae7"
+                "0": "82279d36e4fb54f2b6691695d2c6e3d63f6bd668"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -574,7 +575,7 @@
                 "split": 1
             },
             "uids": {
-                "0": "507700a71bf4b39f935b9822708296577158329f"
+                "0": "a4130997a6e311de1a72832389969c1aaa7a1cea"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -613,7 +614,7 @@
                 "split": 0
             },
             "uids": {
-                "0": "cc3f89ea1e5d2f9f7e96e9b79a004a5cc0fb05d9"
+                "0": "5b6e73caa59b33540817f191afd5cf8a0b85dd24"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {
@@ -659,7 +660,7 @@
                 "split": 1
             },
             "uids": {
-                "0": "e5874f2905c260599b0a46a81170ffc6514c6a45"
+                "0": "6b886a61f70c7eee0200509ce6b759088624ee6b"
             },
             "internalFolder": "{cache}/{nodeType}/{uid0}/",
             "inputs": {

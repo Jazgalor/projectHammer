@@ -404,8 +404,8 @@ class PhotogrammetryApp(tk.Frame):
         image_folder = UPLOAD_FOLDER
         output_folder = MODEL_FOLDER
         cache_folder = os.path.abspath("./MeshroomCache")
-        if os.path.exists('./MeshroomCache'):
-            shutil.rmtree(os.path.abspath("./MeshroomCache"))
+        # if os.path.exists('./MeshroomCache'):
+        #     shutil.rmtree(os.path.abspath("./MeshroomCache"))
         if options["Use CUDA"]:
             graph_folder = "./src/graphs/cuda_2048.mg"
         else:
