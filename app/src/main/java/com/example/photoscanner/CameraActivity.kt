@@ -299,12 +299,12 @@ class CameraActivity : AppCompatActivity() {
                     .setTitle("Za mało zdjęć")
                     .setMessage("Dla dobrej rekonstrukcji 3D zalecane jest minimum 20 zdjęć. Wysłać mimo to?")
                     .setPositiveButton("Wyślij") { _, _ ->
-                        proceedWithSending()
+                        startServerDiscovery()
                     }
                     .setNegativeButton("Zrób więcej zdjęć", null)
                     .show()
             } else {
-                proceedWithSending()
+                startServerDiscovery()
             }
         }
     }
