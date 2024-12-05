@@ -66,9 +66,6 @@ class CameraActivity : AppCompatActivity() {
     )
 
     private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
-    private val ANGLE_TOLERANCE = 35 // Even more tolerance for the larger sectors
-    private var lastToastTime = 0L
-    private val TOAST_DELAY = 1000L
 
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -354,17 +351,7 @@ class CameraActivity : AppCompatActivity() {
         }
     }
 
-    private fun proceedWithSending() {
-        // Wyłącz przycisk, aby zapobiec podwójnemu kliknięciu
-        binding.doneButton.isEnabled = false
 
-        // Utwórz zamiar do powrotu do MainActivity
-        val resultIntent = Intent().apply {
-            putExtra("photoUris", ArrayList(photoUris))
-        }
-        setResult(Activity.RESULT_OK, resultIntent)
-        finish()
-    }
 
     private fun showManualIpDialog() {
         val dialogView = DialogServerIpBinding.inflate(layoutInflater)
@@ -605,8 +592,5 @@ class CameraActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "CameraActivity"
-        private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
-        private const val REQUIRED_PHOTOS = 20 // Minimalna liczba zdjęć dla Meshroom
-        private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
     }
 }
