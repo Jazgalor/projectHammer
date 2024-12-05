@@ -10,6 +10,7 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.graphics.ImageFormat
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
@@ -59,7 +60,7 @@ class CameraActivity : AppCompatActivity() {
     private var imageCapture: ImageCapture? = null
     private lateinit var photoAdapter: PhotoAdapter
     private var photoCount: Int = 0
-    private val REQUIRED_PHOTOS: Int = 4
+    private val REQUIRED_PHOTOS: Int = 20
     private lateinit var outputDirectory: File
     private val photoUris = mutableListOf<Uri>()
     private val sectorColors = listOf(
@@ -159,10 +160,10 @@ class CameraActivity : AppCompatActivity() {
             requestPermissionLauncher.launch(REQUIRED_PERMISSIONS)
         }
 
-        // Pokaż początkową instrukcję
+        // Pokaż początkową instrukcję dla Meshroom
         Toast.makeText(
             this,
-            "Ustaw obiekt na środku i zrób pierwsze zdjęcie",
+            "Zrób pierwsze zdjęcie. Obiekt powinien zajmować większość kadru.",
             Toast.LENGTH_LONG
         ).show()
     }
@@ -244,8 +245,33 @@ class CameraActivity : AppCompatActivity() {
             showPhotoPreview(uri)
         }
 
+        // Konfiguracja przycisku pomocy
+        binding.helpButton.setOnClickListener {
+            showHelpDialog()
+        }
+
         // Aktualizuj licznik zdjęć
         updatePhotoCounter()
+
+        // Pokaż wskazówki dla Meshroom
+        AlertDialog.Builder(this)
+            .setTitle("Wskazówki dla Meshroom")
+            .setMessage(
+                "Jak robić dobre zdjęcia do rekonstrukcji 3D:\n\n" +
+                "1. Zrób minimum 20 zdjęć dookoła obiektu\n" +
+                "2. Każde kolejne zdjęcie rób co około 15-20 stopni\n" +
+                "3. Zrób dodatkowe zdjęcia z góry pod kątem 45°\n" +
+                "4. Upewnij się że:\n" +
+                "   • Zdjęcia nachodzą na siebie w 70-80%\n" +
+                "   • Oświetlenie jest stałe (bez cieni)\n" +
+                "   • Obiekt się nie porusza\n" +
+                "   • Tło jest matowe (nie błyszczy)\n\n" +
+                "Im więcej zdjęć, tym lepsza rekonstrukcja 3D!"
+            )
+            .setPositiveButton("Rozumiem") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
 
         binding.galleryButton.setOnClickListener {
             if (photoCount > 0) {
@@ -269,16 +295,16 @@ class CameraActivity : AppCompatActivity() {
         binding.doneButton.setOnClickListener {
             if (photoCount < REQUIRED_PHOTOS) {
                 // Pokaż ostrzegawcze okno dialogowe
-                android.app.AlertDialog.Builder(this)
+                AlertDialog.Builder(this)
                     .setTitle("Za mało zdjęć")
-                    .setMessage("Zalecane minimum to 4 zdjęcia. Wysłać mimo to?")
+                    .setMessage("Dla dobrej rekonstrukcji 3D zalecane jest minimum 20 zdjęć. Wysłać mimo to?")
                     .setPositiveButton("Wyślij") { _, _ ->
-                        startServerDiscovery()
+                        proceedWithSending()
                     }
                     .setNegativeButton("Zrób więcej zdjęć", null)
                     .show()
             } else {
-                startServerDiscovery()
+                proceedWithSending()
             }
         }
     }
@@ -374,7 +400,7 @@ class CameraActivity : AppCompatActivity() {
     }
 
     private fun updatePhotoCounter() {
-        binding.photoCounter.text = "${photoAdapter.itemCount}/4"
+        binding.photoCounter.text = "${photoAdapter.itemCount}/20"
         binding.photoCounterText.text = "${photoAdapter.itemCount}"
         
         // Aktualizuj kolor wskaźnika postępu w zależności od liczby zdjęć
@@ -384,7 +410,7 @@ class CameraActivity : AppCompatActivity() {
         // Aktualizuj kolor górnego licznika w zależności od liczby zdjęć
         val textColor = when {
             photoAdapter.itemCount >= REQUIRED_PHOTOS -> android.graphics.Color.parseColor("#32CD32") // Zielony
-            photoAdapter.itemCount >= 3 -> android.graphics.Color.parseColor("#FFA500") // Pomarańczowy
+            photoAdapter.itemCount >= 15 -> android.graphics.Color.parseColor("#FFA500") // Pomarańczowy
             else -> android.graphics.Color.parseColor("#FF0000") // Czerwony
         }
         binding.photoCounterText.setTextColor(textColor)
@@ -399,7 +425,15 @@ class CameraActivity : AppCompatActivity() {
             "IMG_${System.currentTimeMillis()}.jpg"
         )
 
-        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+        val metadata = ImageCapture.Metadata().apply {
+            // Add location if available
+            isReversedHorizontal = false
+            isReversedVertical = false
+        }
+
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile)
+            .setMetadata(metadata)
+            .build()
 
         imageCapture.takePicture(
             outputOptions,
@@ -420,12 +454,14 @@ class CameraActivity : AppCompatActivity() {
                         updateProgressIndicator(progress)
 
                         // Pokaż komunikat przewodnika
-                        val message = when (photoCount) {
-                            1 -> "Przejdź w prawo o około 90°"
-                            2 -> "Dobrze! Jeszcze raz w prawo o 90°"
-                            3 -> "Świetnie! Ostatnia pozycja"
-                            4 -> "Gotowe!"
-                            else -> "" // Brak komunikatu po 4 zdjęciach
+                        val message = when {
+                            photoCount == 1 -> "Świetnie! Teraz przejdź w prawo lub lewo o około 15-20 stopni"
+                            photoCount < REQUIRED_PHOTOS -> when {
+                                photoCount % 4 == 0 -> "Dobrze! Możesz teraz zrobić kilka zdjęć z góry pod kątem 45°"
+                                else -> "Kontynuuj robienie zdjęć co 15-20 stopni"
+                            }
+                            photoCount == REQUIRED_PHOTOS -> "Świetnie! Masz minimalną liczbę zdjęć. Możesz zrobić więcej dla lepszej jakości"
+                            else -> "Więcej zdjęć = lepsza jakość modelu 3D!"
                         }
                         if (message.isNotEmpty()) {
                             Toast.makeText(this@CameraActivity, message, Toast.LENGTH_SHORT).show()
@@ -457,7 +493,7 @@ class CameraActivity : AppCompatActivity() {
                 .setTargetResolution(Size(4000, 3000))  // 12 MP resolution
                 .setTargetRotation(binding.viewFinder.display.rotation)
                 .setFlashMode(ImageCapture.FLASH_MODE_AUTO)
-                .setJpegQuality(100)  // Maximum quality
+                .setJpegQuality(100)  // Maximum quality for Meshroom processing
                 .build()
 
             val cameraSelector = CameraSelector.Builder()
@@ -528,8 +564,8 @@ class CameraActivity : AppCompatActivity() {
 
         // Kolor oparty tylko na całkowitej liczbie zdjęć
         val color = when {
-            photoAdapter.itemCount >= REQUIRED_PHOTOS -> sectorColors[2] // Zielony przy 4+ zdjęciach
-            photoAdapter.itemCount >= 3 -> sectorColors[1] // Pomarańczowy przy zbliżaniu się
+            photoAdapter.itemCount >= REQUIRED_PHOTOS -> sectorColors[2] // Zielony przy 20+ zdjęciach
+            photoAdapter.itemCount >= 15 -> sectorColors[1] // Pomarańczowy przy zbliżaniu się
             else -> sectorColors[0] // Czerwony na początku
         }
 
@@ -537,9 +573,44 @@ class CameraActivity : AppCompatActivity() {
         binding.rotateIcon.setColorFilter(color)
     }
 
+    private fun showHelpDialog() {
+        AlertDialog.Builder(this)
+            .setTitle("Jak korzystać z aplikacji")
+            .setMessage(
+                "Instrukcja skanowania 3D:\n\n" +
+                "1. Przygotowanie:\n" +
+                "   • Umieść obiekt na matowym tle\n" +
+                "   • Zapewnij dobre, stałe oświetlenie\n" +
+                "   • Unikaj błyszczących powierzchni\n\n" +
+                "2. Wykonywanie zdjęć:\n" +
+                "   • Zrób minimum 20 zdjęć dookoła obiektu\n" +
+                "   • Wykonuj zdjęcia co 15-20 stopni\n" +
+                "   • Zrób dodatkowe zdjęcia z góry pod kątem 45°\n" +
+                "   • Upewnij się, że zdjęcia nachodzą na siebie w 70-80%\n\n" +
+                "3. Wskazówki:\n" +
+                "   • Obiekt powinien zajmować większość kadru\n" +
+                "   • Utrzymuj stałą odległość od obiektu\n" +
+                "   • Możesz usunąć nieudane zdjęcie przytrzymując je\n" +
+                "   • Im więcej zdjęć, tym lepsza jakość modelu 3D\n\n" +
+                "4. Kolory postępu:\n" +
+                "   • Czerwony: za mało zdjęć (0-14)\n" +
+                "   • Pomarańczowy: prawie gotowe (15-19)\n" +
+                "   • Zielony: minimalna liczba zdjęć (20+)\n\n" +
+                "5. Wysyłanie:\n" +
+                "   • Naciśnij przycisk 'Gotowe' gdy skończysz\n" +
+                "   • Aplikacja automatycznie znajdzie serwer\n" +
+                "   • Zdjęcia zostaną wysłane do rekonstrukcji 3D"
+            )
+            .setPositiveButton("Rozumiem") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
+    }
+
     companion object {
         private const val TAG = "CameraActivity"
         private const val FILENAME_FORMAT = "yyyy-MM-dd-HH-mm-ss-SSS"
-        private const val REQUIRED_PHOTOS = 4 // Wymagana liczba zdjęć
+        private const val REQUIRED_PHOTOS = 20 // Minimalna liczba zdjęć dla Meshroom
+        private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
     }
 }
