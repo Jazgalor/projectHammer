@@ -8,7 +8,12 @@
     <string name="previous">Previous</string>
     <string name="take_photo">Zrób zdjęcie</string>
     <string name="photo_taken">Zdjęcie zostało zrobione</string>
-
+    <string name="initial_instruction">Zrób pierwsze zdjęcie. Obiekt powinien zajmować większość kadru.</string>
+    <string name="meshroom_tips">Jak robić dobre zdjęcia do rekonstrukcji 3D:\n\n1. Zrób minimum 20 zdjęć dookoła obiektu\n2. Każde kolejne zdjęcie rób co około 15-20 stopni\n3. Zrób dodatkowe zdjęcia z góry pod kątem 45°\n4. Upewnij się że:\n   • Zdjęcia nachodzą na siebie w 70-80%\n   • Oświetlenie jest stałe (bez cieni)\n   • Obiekt się nie porusza\n   • Tło jest matowe (nie błyszczy)\n\nIm więcej zdjęć, tym lepsza rekonstrukcja 3D!</string>
+    <string name="not_enough_photos_warning">Dla dobrej rekonstrukcji 3D zalecane jest minimum 20 zdjęć. Wysłać mimo to?</string>
+    <string name="send">Wyślij</string>
+    <string name="take_more_photos">Zrób więcej zdjęć</string>
+    <string name="no_permissions">Brak wymaganych uprawnień</string>
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
         volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus
