@@ -153,12 +153,7 @@ class CameraActivity : AppCompatActivity() {
             requestPermissionLauncher.launch(REQUIRED_PERMISSIONS)
         }
 
-        // Pokaż początkową instrukcję dla Meshroom
-        Toast.makeText(
-            this,
-            "Zrób pierwsze zdjęcie. Obiekt powinien zajmować większość kadru.",
-            Toast.LENGTH_LONG
-        ).show()
+
     }
 
     override fun onDestroy() {
@@ -438,13 +433,13 @@ class CameraActivity : AppCompatActivity() {
 
                         // Pokaż komunikat przewodnika
                         val message = when {
-                            photoCount == 1 -> "Świetnie! Teraz przejdź w prawo lub lewo o około 15-20 stopni"
+                            photoCount == 1 -> "Świetnie! Przejdź w prawo o 15-20 stopni"
                             photoCount < REQUIRED_PHOTOS -> when {
-                                photoCount % 4 == 0 -> "Dobrze! Możesz teraz zrobić kilka zdjęć z góry pod kątem 45°"
-                                else -> "Kontynuuj robienie zdjęć co 15-20 stopni"
+                                photoCount % 4 == 0 -> "Dobrze! Zrób zdjęcia z góry"
+                                else -> "Kontynuuj co 15-20 stopni"
                             }
-                            photoCount == REQUIRED_PHOTOS -> "Świetnie! Masz minimalną liczbę zdjęć. Możesz zrobić więcej dla lepszej jakości"
-                            else -> "Więcej zdjęć = lepsza jakość modelu 3D!"
+                            photoCount == REQUIRED_PHOTOS -> "Masz minimum! Zrób więcej"
+                            else -> "Więcej zdjęć = lepszy model 3D!"
                         }
                         if (message.isNotEmpty()) {
                             Toast.makeText(this@CameraActivity, message, Toast.LENGTH_SHORT).show()
