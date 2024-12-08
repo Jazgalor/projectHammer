@@ -53,6 +53,43 @@ def log(
 #                   GUI
 #############################################
 
+
+class ToolTip:
+    """Klasa obsługująca tooltipy w Tkinter."""
+    def __init__(self, widget, text):
+        self.widget = widget
+        self.text = text
+        self.tooltip_window = None
+
+        # Powiąż zdarzenia z widgetem
+        self.widget.bind("<Enter>", self.show_tooltip)
+        self.widget.bind("<Leave>", self.hide_tooltip)
+
+    def show_tooltip(self, event=None):
+        """Pokaż dymek z tekstem."""
+        if self.tooltip_window or not self.text:
+            return
+
+        x, y, _, _ = self.widget.bbox("insert")  # Pozycja widgetu
+        x += self.widget.winfo_rootx() + 25  # Dodaj przesunięcie
+        y += self.widget.winfo_rooty() + 20
+
+        # Utwórz okno dla tooltipa
+        self.tooltip_window = tw = tk.Toplevel(self.widget)
+        tw.wm_overrideredirect(True)  # Usuń ramkę okna
+        tw.wm_geometry(f"+{x}+{y}")
+
+        label = tk.Label(tw, text=self.text, justify="left",
+                         background="#ffffe0", relief="solid", borderwidth=1,
+                         font=("tahoma", "8", "normal"))
+        label.pack(ipadx=5, ipady=2)
+
+    def hide_tooltip(self, event=None):
+        """Ukryj dymek."""
+        if self.tooltip_window:
+            self.tooltip_window.destroy()
+            self.tooltip_window = None
+
 class App(tk.Tk):
 
     def __init__(self, *args, **kwargs):
@@ -85,25 +122,25 @@ class StartPage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
-        label = tk.Label(self, text="Start page", font=controller.title_font)
+        label = tk.Label(self, text="Strona startowa", font=controller.title_font)
         label.pack(side="top", fill="x", pady=5)
 
         main_frame = tk.Frame(self, relief="sunken", bd=2, width=100)
         main_frame.pack(side="top", pady=10, padx=10, expand=True)
 
-        button1 = tk.Button(main_frame, text="Image receiver page",
+        button1 = tk.Button(main_frame, text="Odbieranie zdjęć",
                             command=lambda: controller.show_frame("ImageReceiverApp"))
         button1.pack(fill="x", pady=10, padx=10)
 
-        button2 = tk.Button(main_frame, text="Image browser page",
+        button2 = tk.Button(main_frame, text="Przeglądanie zdjęć",
                             command=lambda: controller.show_frame("ImageBrowserApp"))
         button2.pack(fill="x", pady=10, padx=10)
 
-        button3 = tk.Button(main_frame, text="Photogrammetry page",
+        button3 = tk.Button(main_frame, text="Fotogrametria",
                             command=lambda: controller.show_frame("PhotogrammetryApp"))
         button3.pack(fill="x", pady=10, padx=10)
 
-        quit_button = tk.Button(main_frame, text="Quit",
+        quit_button = tk.Button(main_frame, text="Wyjście",
                             command=controller.destroy)
         quit_button.pack(fill="x", pady=10, padx=10)
 
@@ -116,19 +153,19 @@ class ImageReceiverApp(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.controller = controller
         
-        label = tk.Label(self, text="Image receiver service page", font=controller.title_font)
+        label = tk.Label(self, text="Odbierania zdjęć", font=controller.title_font)
         label.pack(side="top", fill="x", pady=5)
 
         main_frame = tk.Frame(self, relief="sunken", bd=2, width=100)
         main_frame.pack(side="top", pady=10, padx=10, expand=True)
 
-        start_button = tk.Button(main_frame, text="Start service", command=self.start_services)
+        start_button = tk.Button(main_frame, text="Rozpocznij usługę", command=self.start_services)
         start_button.pack(fill="x", pady=10, padx=10)
 
-        stop_button = tk.Button(main_frame, text="Stop service", command=self.stop_services)
+        stop_button = tk.Button(main_frame, text="Zatrzymaj usługę", command=self.stop_services)
         stop_button.pack(fill="x", pady=10, padx=10)
 
-        return_button = tk.Button(main_frame, text="Return",
+        return_button = tk.Button(main_frame, text="Powrót",
                             command=lambda: controller.show_frame("StartPage"))
         return_button.pack(fill="x", pady=10, padx=10)
 
@@ -231,7 +268,7 @@ class ImageBrowserApp(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.controller = controller
 
-        label = tk.Label(self, text="Image browser page", font=controller.title_font)
+        label = tk.Label(self, text="Przeglądanie zdjęć", font=controller.title_font)
         label.pack(side="top", fill="x", pady=10)
 
         # Frame for list of images
@@ -250,19 +287,19 @@ class ImageBrowserApp(tk.Frame):
         self.scrollbar.pack(side="right", fill="y")
         self.image_listbox.config(yscrollcommand=self.scrollbar.set)
 
-        view_button = tk.Button(left_frame, text="View Selected", command=self.view_selected_image)
+        view_button = tk.Button(left_frame, text="Wyświetl zaznaczone", command=self.view_selected_image)
         view_button.pack(padx=5, pady=5, fill='x')
 
-        delete_button = tk.Button(left_frame, text="Delete Selected", command=self.delete_selected_image)
+        delete_button = tk.Button(left_frame, text="Usuń zaznaczone", command=self.delete_selected_image)
         delete_button.pack(padx=5, pady=5, fill='x')
 
-        delete_all_button = tk.Button(left_frame, text="Delete All", command=self.delete_all_images)
+        delete_all_button = tk.Button(left_frame, text="Usuń wszystko", command=self.delete_all_images)
         delete_all_button.pack(padx=5, pady=5, fill='x')
 
-        refresh_button = tk.Button(left_frame, text="Refresh", command=self.refresh_image_list)
+        refresh_button = tk.Button(left_frame, text="Odśwież", command=self.refresh_image_list)
         refresh_button.pack(padx=5, pady=5, fill='x')
 
-        return_button = tk.Button(left_frame, text="Return", command=lambda: controller.show_frame("StartPage"))
+        return_button = tk.Button(left_frame, text="Powrót", command=lambda: controller.show_frame("StartPage"))
         return_button.pack(padx=5, pady=5, fill='x')
 
         self.refresh_image_list()
@@ -280,23 +317,23 @@ class ImageBrowserApp(tk.Frame):
         """Deletes the selected image from the list and filesystem."""
         selected_image = self.image_listbox.get(tk.ACTIVE)
         if selected_image:
-            confirm = messagebox.askyesno("Delete Image", f"Are you sure you want to delete '{selected_image}'?")
+            confirm = messagebox.askyesno("Usuń zdjęcie", f"Czy jesteś pewien, żeby usunąć zdjęcie '{selected_image}'?")
             if confirm:
                 os.remove(os.path.join(UPLOAD_FOLDER, selected_image))
                 self.refresh_image_list()
-                messagebox.showinfo("Deleted", f"'{selected_image}' has been deleted.")
+                messagebox.showinfo("Usunięto", f"'{selected_image}' zostało usunięte.")
         else:
-            messagebox.showwarning("No Selection", "Please select an image to delete.")
+            messagebox.showwarning("Bark zaznaczenia", "Zaznacz zdjęcie, żeby móc je usunąć.")
 
     def delete_all_images(self):
         """Deletes all images in the UPLOAD_FOLDER."""
-        confirm = messagebox.askyesno("Delete All Images", "Are you sure you want to delete all images?")
+        confirm = messagebox.askyesno("Usuń Wszystkie Zdjęcia", "Czy jesteś pewien, żeby usunąć wszystkie zdjęcia?")
         if confirm:
             for image in os.listdir(UPLOAD_FOLDER):
                 if image.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp')):
                     os.remove(os.path.join(UPLOAD_FOLDER, image))
             self.refresh_image_list()
-            messagebox.showinfo("Deleted", "All images have been deleted.")
+            messagebox.showinfo("Usunięto", "Wszystkie zdjęcie zostały usunięte.")
 
     def view_selected_image(self):
         """Opens a new window to display the selected image."""
@@ -315,10 +352,10 @@ class ImageBrowserApp(tk.Frame):
             img_label.image = img_tk  # Keep reference to avoid garbage collection
             img_label.pack()
 
-            close_button = tk.Button(view_window, text="Close", command=view_window.destroy)
+            close_button = tk.Button(view_window, text="Zamknij", command=view_window.destroy)
             close_button.pack(pady=10)
         else:
-            messagebox.showwarning("No Selection", "Please select an image to view.")
+            messagebox.showwarning("Bark zaznaczenia", "Zaznacz zdjęcie, żeby móc je wyświetlić.")
 
 
 class PhotogrammetryApp(tk.Frame):
@@ -335,13 +372,20 @@ class PhotogrammetryApp(tk.Frame):
             "Texturing:textureSide": ["1024", "2048", "4096", "8192", "16384"],
             "Texturing:downscale": ["1", "2", "4", "8"]
         }
+        self.description = [
+            'Ustawienie predefiniowane dla ekstrakcji cech obrazu. \nOkreśla poziom szczegółowości analizowanych cech \n(np. "low" - niski, "ultra" - bardzo wysoki). \nWpływa na szybkość i dokładność przetwarzania.',
+            'Jakość wyodrębnianych cech. Wyższa jakość ("high", "ultra") \nzapewnia większą precyzję, ale wydłuża czas przetwarzania.',
+            'Współczynnik zmniejszenia rozdzielczości obrazu podczas generowania mapy głębi. \nWyższe wartości (np. "8", "16") przyspieszają przetwarzanie kosztem dokładności.',
+            'Rozdzielczość tekstury generowanej dla modelu 3D. \nOpcje określają długość jednego boku tekstury w pikselach (np. "2048" oznacza teksturę 2048x2048 px). \nWyższe wartości zapewniają lepsze detale.',
+            'Współczynnik zmniejszenia rozdzielczości tekstury w stosunku do oryginalnej. \nMniejsze wartości (np. "1", "2") zachowują wysoką jakość, \npodczas gdy wyższe redukują szczegółowość dla szybszego renderowania.',
+        ]
 
         # Store selected values for each option
         self.selected_options = {key: tk.StringVar(value=values[1]) for key, values in self.options.items()}
         self.use_cuda = tk.BooleanVar(value=False)  # Variable for CUDA checkbox
 
         # Header label for the Photogrammetry page
-        label = tk.Label(self, text="Photogrammetry Page", font=controller.title_font)
+        label = tk.Label(self, text="Fotogrametria", font=controller.title_font)
         label.pack(side="top", fill="x", pady=5)
 
         # Split the frame into left and right sections
@@ -351,29 +395,33 @@ class PhotogrammetryApp(tk.Frame):
         right_frame = tk.Frame(self, relief="sunken", bd=2)
         right_frame.pack(side="right", fill="both", expand=True, padx=5, pady=10)
 
-        option_frame = tk.LabelFrame(right_frame, text="Graph Options")
+        option_frame = tk.LabelFrame(right_frame, text="Opcje Grafu")
         option_frame.pack(side="left", fill="both", expand=True, padx=10, pady=10)
 
         # Start photogrammetry button on the left side
-        self.photogrammetry_button = tk.Button(left_frame, text="Start",
+        self.photogrammetry_button = tk.Button(left_frame, text="Rozpocznij",
                                           command=lambda: self.new_photogrammetry_thread())
         self.photogrammetry_button.pack(padx=5, pady=5, fill='x')
 
         # Return button on the left side
-        return_button = tk.Button(left_frame, text="Return",
+        return_button = tk.Button(left_frame, text="Powrót",
                                   command=lambda: controller.show_frame("StartPage"))
         return_button.pack(padx=5, pady=5, fill='x')
 
         # CUDA option on the right side
-        cuda_checkbox = tk.Checkbutton(option_frame, text="Use CUDA", variable=self.use_cuda, command=self.toggle_depthmap_options)
+        cuda_checkbox = tk.Checkbutton(option_frame, text="CUDA", variable=self.use_cuda, command=self.toggle_depthmap_options)
         cuda_checkbox.grid(row=0, column=0, sticky="w", pady=5)
 
         # Create the selection options on the right side
         row = 1  # Start row after CUDA option
+        i = 0
         for option_name, choices in self.options.items():
             # Label for each option
             label = tk.Label(option_frame, text=option_name)
             label.grid(row=row, column=0, sticky="w", pady=2, padx=10)
+
+            ToolTip(label, text=self.description[i])
+            i += 1
 
             # Dropdown menu for each option
             option_menu = tk.OptionMenu(option_frame, self.selected_options[option_name], *choices)
@@ -404,7 +452,7 @@ class PhotogrammetryApp(tk.Frame):
         image_folder = UPLOAD_FOLDER
         output_folder = MODEL_FOLDER
         cache_folder = os.path.abspath("./MeshroomCache")
-        confirm = messagebox.askyesno("Delete previous cache", f"Are you sure you want to delete previously cached data? (It must be done if there is a new set of images)")
+        confirm = messagebox.askyesno("Usuń poprzedni folder cach", f"Czy chcesz usunąć wszystkie dane z folderu cach? (powinno się to zrobić przy nowym zestawie zdjęć)")
         if confirm:
             if os.path.exists('./MeshroomCache'):
                 shutil.rmtree(os.path.abspath("./MeshroomCache"))
